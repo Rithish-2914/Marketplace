@@ -573,19 +573,58 @@ const RateSeller: React.FC<{ sellerId: string }> = ({ sellerId }) => {
 
 // Sub-component: Profile Page
 const ProfilePage: React.FC = () => {
-    const { user } = useAuth();
+    const { user, refreshUser } = useAuth();
     const { updateUser } = useData();
     const [isEditing, setIsEditing] = useState(false);
+    const [isUploadingPicture, setIsUploadingPicture] = useState(false);
     
     const [fullName, setFullName] = useState(user?.fullName || '');
     const [branch, setBranch] = useState(user?.branch || '');
     const [year, setYear] = useState(user?.year || 1);
     const [hostelBlock, setHostelBlock] = useState(user?.hostelBlock || '');
+    const [selectedImage, setSelectedImage] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
 
     if (!user) return null;
 
-    const handleSave = () => {
-        updateUser(user.id, { fullName, branch, year, hostelBlock });
+    const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Image size must be less than 5MB');
+                return;
+            }
+            setSelectedImage(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleUploadProfilePicture = async () => {
+        if (!selectedImage) return;
+        
+        setIsUploadingPicture(true);
+        try {
+            const imageUrl = await uploadImageToSupabase(selectedImage, 'items', `profile_${user.id}`);
+            await updateUser(user.id, { profilePictureUrl: imageUrl });
+            await refreshUser();
+            setSelectedImage(null);
+            setImagePreview(null);
+            alert('Profile picture updated successfully!');
+        } catch (error) {
+            console.error('Failed to upload profile picture:', error);
+            alert('Failed to upload profile picture. Please try again.');
+        } finally {
+            setIsUploadingPicture(false);
+        }
+    };
+
+    const handleSave = async () => {
+        await updateUser(user.id, { fullName, branch, year, hostelBlock });
+        await refreshUser();
         setIsEditing(false);
         alert('Profile updated successfully!');
     };
@@ -600,7 +639,47 @@ const ProfilePage: React.FC = () => {
             </div>
             <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg max-w-2xl mx-auto">
                 <div className="text-center">
-                    <img src={user.profilePictureUrl} alt={user.fullName} className="w-32 h-32 rounded-full mx-auto ring-4 ring-primary-500/50 p-1" />
+                    <div className="relative inline-block">
+                        <img 
+                            src={imagePreview || user.profilePictureUrl} 
+                            alt={user.fullName} 
+                            className="w-32 h-32 rounded-full mx-auto ring-4 ring-primary-500/50 p-1 object-cover" 
+                        />
+                        <label 
+                            htmlFor="profile-picture-upload" 
+                            className="absolute bottom-0 right-0 bg-primary-500 text-white p-2 rounded-full cursor-pointer hover:bg-primary-600 transition-all shadow-lg"
+                            title="Change profile picture"
+                        >
+                            <CameraIcon className="w-5 h-5" />
+                            <input 
+                                id="profile-picture-upload" 
+                                type="file" 
+                                accept="image/*" 
+                                onChange={handleImageSelect} 
+                                className="hidden" 
+                            />
+                        </label>
+                    </div>
+                    {selectedImage && (
+                        <div className="mt-4">
+                            <AnimatedButton 
+                                onClick={handleUploadProfilePicture} 
+                                disabled={isUploadingPicture}
+                                className="text-sm"
+                            >
+                                {isUploadingPicture ? 'Uploading...' : 'Save Profile Picture'}
+                            </AnimatedButton>
+                            <button 
+                                onClick={() => {
+                                    setSelectedImage(null);
+                                    setImagePreview(null);
+                                }}
+                                className="ml-2 text-sm text-gray-600 hover:underline"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    )}
                     {!isEditing ? (
                         <>
                             <h3 className="text-2xl font-bold mt-4">{user.fullName}</h3>

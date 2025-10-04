@@ -17,7 +17,7 @@ interface DataContextType {
     addLostItem: (item: Omit<LostItem, 'id' | 'dateFound'>) => Promise<void>;
     toggleWishlist: (id: string) => void;
     isInWishlist: (id: string) => boolean;
-    updateUser: (userId: string, updatedData: Partial<Pick<User, 'fullName' | 'branch' | 'year' | 'hostelBlock'>>) => Promise<void>;
+    updateUser: (userId: string, updatedData: Partial<Pick<User, 'fullName' | 'branch' | 'year' | 'hostelBlock' | 'profilePictureUrl'>>) => Promise<void>;
     rateUser: (sellerId: string, rating: number) => Promise<void>;
     reportItem: (itemId: string, reporterId: string, reason: string) => Promise<void>;
     submitClaim: (claimData: Omit<Claim, 'id' | 'createdAt' | 'status'>) => Promise<void>;
@@ -122,7 +122,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return user?.wishlist?.includes(id) ?? false;
     }, [user]);
 
-    const updateUser = async (userId: string, updatedData: Partial<Pick<User, 'fullName' | 'branch' | 'year' | 'hostelBlock'>>) => {
+    const updateUser = async (userId: string, updatedData: Partial<Pick<User, 'fullName' | 'branch' | 'year' | 'hostelBlock' | 'profilePictureUrl'>>) => {
         await supabase.from('users').update(updatedData).eq('id', userId);
     };
 

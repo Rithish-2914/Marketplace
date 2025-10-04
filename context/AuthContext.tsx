@@ -9,6 +9,7 @@ import {
     signOut,
     GoogleAuthProvider,
     signInWithPopup,
+    sendEmailVerification,
     User as FirebaseUser
 } from 'firebase/auth';
 
@@ -19,6 +20,7 @@ interface AuthContextType {
     signup: (userData: Pick<User, 'fullName' | 'email' | 'regNo' | 'branch' | 'year' | 'hostelBlock'> & {password: string}) => Promise<boolean>;
     logout: () => void;
     googleLogin: () => Promise<boolean>;
+    refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -50,7 +52,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                         year: 1,
                         hostelBlock: 'UPDATE_ME',
                         role: firebaseUser.email?.endsWith('@vit.ac.in') ? Role.ADMIN : Role.STUDENT,
-                        profilePictureUrl: firebaseUser.photoURL || `https://i.pravatar.cc/150?u=${firebaseUser.uid}`,
+                        profilePictureUrl: firebaseUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(firebaseUser.displayName || 'User')}&background=random&size=200`,
                         rating: 0,
                         ratingsCount: 0,
                         wishlist: [],
@@ -75,7 +77,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
     const login = async (email: string, password?: string): Promise<boolean> => {
         try {
-            await signInWithEmailAndPassword(auth, email, password || '');
+            const userCredential = await signInWithEmailAndPassword(auth, email, password || '');
+            
+            if (!userCredential.user.emailVerified) {
+                alert('Please verify your email before logging in. Check your inbox for the verification link.');
+                await signOut(auth);
+                return false;
+            }
+            
             return true;
         } catch (error) {
             console.error("Firebase login failed:", error);
@@ -88,6 +97,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const userCredential = await createUserWithEmailAndPassword(auth, userData.email, userData.password);
             const firebaseUser = userCredential.user;
             
+            await sendEmailVerification(firebaseUser);
+            
             const newUser: User = {
                 id: firebaseUser.uid,
                 fullName: userData.fullName,
@@ -97,7 +108,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 year: userData.year,
                 hostelBlock: userData.hostelBlock,
                 role: userData.email.endsWith('@vit.ac.in') ? Role.ADMIN : Role.STUDENT,
-                profilePictureUrl: firebaseUser.photoURL || `https://i.pravatar.cc/150?u=${firebaseUser.uid}`,
+                profilePictureUrl: firebaseUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.fullName)}&background=random&size=200`,
                 rating: 0,
                 ratingsCount: 0,
                 wishlist: [],
@@ -106,6 +117,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             
             const { error } = await supabase.from('users').insert([newUser]);
             if (error) throw error;
+            
+            alert('Account created! Please check your email to verify your account before logging in.');
+            await signOut(auth);
             return true;
        } catch (error) {
            console.error("Signup failed:", error);
@@ -135,7 +149,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     year: 1,
                     hostelBlock: 'TBD',
                     role: firebaseUser.email?.endsWith('@vit.ac.in') ? Role.ADMIN : Role.STUDENT,
-                    profilePictureUrl: firebaseUser.photoURL || `https://i.pravatar.cc/150?u=${firebaseUser.uid}`,
+                    profilePictureUrl: firebaseUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(firebaseUser.displayName || 'User')}&background=random&size=200`,
                     rating: 0,
                     ratingsCount: 0,
                     wishlist: [],
@@ -154,8 +168,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         signOut(auth);
     };
 
+    const refreshUser = async () => {
+        const firebaseUser = auth.currentUser;
+        if (firebaseUser) {
+            const { data, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('id', firebaseUser.uid)
+                .single();
+
+            if (data && !error) {
+                setUser(data as User);
+            }
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, loading, login, signup, logout, googleLogin }}>
+        <AuthContext.Provider value={{ user, loading, login, signup, logout, googleLogin, refreshUser }}>
             {children}
         </AuthContext.Provider>
     );
