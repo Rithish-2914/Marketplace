@@ -6,8 +6,7 @@ import { Item, ItemCategory, ItemCondition, LostItem } from '../types';
 import ItemCard from '../components/ItemCard';
 import AnimatedButton from '../components/AnimatedButton';
 import { CameraIcon, PlusIcon, StarIcon, RatingStarIcon } from '../assets/icons';
-import { storage } from '../firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { uploadImageToSupabase } from '../utils/storage';
 
 
 // Main Student Application Component
@@ -289,9 +288,7 @@ const SellItemPage: React.FC<{ onPostSuccess: () => void }> = ({ onPostSuccess }
         setIsUploading(true);
 
         try {
-            const storageRef = ref(storage, `items/${Date.now()}_${imageFile.name}`);
-            const uploadTask = await uploadBytes(storageRef, imageFile);
-            const imageUrl = await getDownloadURL(uploadTask.ref);
+            const imageUrl = await uploadImageToSupabase(imageFile, 'items', 'listings');
 
             const newItem: Omit<Item, 'id' | 'createdAt' | 'isSold'> = {
                 sellerId: user.id,
@@ -415,10 +412,8 @@ const ClaimItemModal: React.FC<{ item: LostItem, onClose: () => void }> = ({ ite
     const [comments, setComments] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const uploadFile = async (file: File, path: string): Promise<string> => {
-        const storageRef = ref(storage, path);
-        const snapshot = await uploadBytes(storageRef, file);
-        return getDownloadURL(snapshot.ref);
+    const uploadFile = async (file: File, folder: string): Promise<string> => {
+        return await uploadImageToSupabase(file, 'claims', folder);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
