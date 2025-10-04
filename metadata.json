@@ -1,0 +1,7 @@
+{
+  "name": "SwapHands - VIT Marketplace",
+  "description": "A marketplace for VIT Vellore students to buy, sell, and swap second-hand items like cycles, books, gadgets, and more. Features include student-only access, an admin panel for moderation, and a lost & found section.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
