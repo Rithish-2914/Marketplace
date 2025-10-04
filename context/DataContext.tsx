@@ -1,37 +1,8 @@
 import React, { createContext, useState, useContext, ReactNode, useCallback, useEffect } from 'react';
 import { User, Item, LostItem, Complaint, Claim, ClaimStatus, ComplaintStatus } from '../types';
 import { useAuth } from './AuthContext';
-import { db } from '../firebase';
-import {
-    collection,
-    onSnapshot,
-    doc,
-    addDoc,
-    deleteDoc,
-    updateDoc,
-    arrayUnion,
-    arrayRemove,
-    serverTimestamp,
-    query,
-    writeBatch,
-    where,
-    getDocs,
-    Timestamp
-} from 'firebase/firestore';
+import { supabase } from '../supabase';
 
-// --- HELPER FUNCTION ---
-// Generic function to convert Firestore docs with Timestamps to app types with Dates
-const mapDocToData = <T extends { id: string, createdAt?: any, dateFound?: any }>(doc: any): T => {
-    const data = doc.data();
-    return {
-        ...data,
-        id: doc.id,
-        createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : data.createdAt,
-        dateFound: data.dateFound instanceof Timestamp ? data.dateFound.toDate() : data.dateFound,
-    } as T;
-};
-
-// --- CONTEXT TYPE ---
 interface DataContextType {
     users: User[];
     items: Item[];
@@ -56,7 +27,6 @@ interface DataContextType {
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
-// --- PROVIDER COMPONENT ---
 export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const { user } = useAuth();
     const [users, setUsers] = useState<User[]>([]);
@@ -66,55 +36,86 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [claims, setClaims] = useState<Claim[]>([]);
 
     useEffect(() => {
-        const collections = {
-            users: setUsers,
-            items: setItems,
-            lostItems: setLostItems,
-            complaints: setComplaints,
-            claims: setClaims,
+        const fetchData = async () => {
+            const { data: usersData } = await supabase.from('users').select('*');
+            const { data: itemsData } = await supabase.from('items').select('*');
+            const { data: lostItemsData } = await supabase.from('lost_items').select('*');
+            const { data: complaintsData } = await supabase.from('complaints').select('*');
+            const { data: claimsData } = await supabase.from('claims').select('*');
+
+            if (usersData) setUsers(usersData.map(u => ({ ...u, createdAt: new Date(u.createdAt) })));
+            if (itemsData) setItems(itemsData.map(i => ({ ...i, createdAt: new Date(i.createdAt) })));
+            if (lostItemsData) setLostItems(lostItemsData.map(l => ({ ...l, dateFound: new Date(l.dateFound) })));
+            if (complaintsData) setComplaints(complaintsData.map(c => ({ ...c, createdAt: new Date(c.createdAt) })));
+            if (claimsData) setClaims(claimsData.map(c => ({ ...c, createdAt: new Date(c.createdAt) })));
         };
 
-        const unsubscribers = Object.entries(collections).map(([collectionName, setter]) => {
-            const q = query(collection(db, collectionName));
-            return onSnapshot(q, (snapshot) => {
-                const data = snapshot.docs.map(doc => mapDocToData(doc));
-                setter(data as any);
-            });
-        });
+        fetchData();
 
-        return () => unsubscribers.forEach(unsub => unsub());
+        const usersSubscription = supabase
+            .channel('users_channel')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, () => fetchData())
+            .subscribe();
+
+        const itemsSubscription = supabase
+            .channel('items_channel')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'items' }, () => fetchData())
+            .subscribe();
+
+        const lostItemsSubscription = supabase
+            .channel('lost_items_channel')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'lost_items' }, () => fetchData())
+            .subscribe();
+
+        const complaintsSubscription = supabase
+            .channel('complaints_channel')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'complaints' }, () => fetchData())
+            .subscribe();
+
+        const claimsSubscription = supabase
+            .channel('claims_channel')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'claims' }, () => fetchData())
+            .subscribe();
+
+        return () => {
+            usersSubscription.unsubscribe();
+            itemsSubscription.unsubscribe();
+            lostItemsSubscription.unsubscribe();
+            complaintsSubscription.unsubscribe();
+            claimsSubscription.unsubscribe();
+        };
     }, []);
-
 
     const getUserById = useCallback((id: string) => users.find(u => u.id === id), [users]);
     const getItemById = useCallback((id: string) => items.find(i => i.id === id), [items]);
 
     const addItem = async (itemData: Omit<Item, 'id' | 'createdAt' | 'isSold'>) => {
-        await addDoc(collection(db, 'items'), { ...itemData, createdAt: serverTimestamp() });
+        await supabase.from('items').insert([{ ...itemData, isSold: false, createdAt: new Date().toISOString() }]);
     };
     
     const removeItem = async (id: string) => {
-        await deleteDoc(doc(db, 'items', id));
+        await supabase.from('items').delete().eq('id', id);
     };
 
     const toggleSuspendUser = async (id: string) => {
         const userToUpdate = users.find(u => u.id === id);
         if (userToUpdate) {
-            await updateDoc(doc(db, 'users', id), { isSuspended: !userToUpdate.isSuspended });
+            await supabase.from('users').update({ isSuspended: !userToUpdate.isSuspended }).eq('id', id);
         }
     };
     
     const addLostItem = async (itemData: Omit<LostItem, 'id' | 'dateFound'>) => {
-        await addDoc(collection(db, 'lostItems'), { ...itemData, dateFound: serverTimestamp() });
+        await supabase.from('lost_items').insert([{ ...itemData, dateFound: new Date().toISOString() }]);
     };
     
     const toggleWishlist = async (id: string) => {
         if (!user) return;
-        const userRef = doc(db, 'users', user.id);
         const userWishlist = user.wishlist || [];
-        await updateDoc(userRef, {
-            wishlist: userWishlist.includes(id) ? arrayRemove(id) : arrayUnion(id)
-        });
+        const newWishlist = userWishlist.includes(id) 
+            ? userWishlist.filter(itemId => itemId !== id)
+            : [...userWishlist, id];
+        
+        await supabase.from('users').update({ wishlist: newWishlist }).eq('id', user.id);
     };
 
     const isInWishlist = useCallback((id: string) => {
@@ -122,7 +123,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }, [user]);
 
     const updateUser = async (userId: string, updatedData: Partial<Pick<User, 'fullName' | 'branch' | 'year' | 'hostelBlock'>>) => {
-        await updateDoc(doc(db, 'users', userId), updatedData);
+        await supabase.from('users').update(updatedData).eq('id', userId);
     };
 
     const rateUser = async (sellerId: string, rating: number) => {
@@ -131,56 +132,48 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const currentTotalRating = seller.rating * seller.ratingsCount;
         const newRatingsCount = seller.ratingsCount + 1;
         const newAverageRating = (currentTotalRating + rating) / newRatingsCount;
-        await updateDoc(doc(db, 'users', sellerId), {
+        await supabase.from('users').update({
             rating: parseFloat(newAverageRating.toFixed(1)),
             ratingsCount: newRatingsCount,
-        });
+        }).eq('id', sellerId);
     };
 
     const reportItem = async (itemId: string, reporterId: string, reason: string) => {
-        await addDoc(collection(db, 'complaints'), {
+        await supabase.from('complaints').insert([{
             itemId,
             reporterId,
             reason,
-            createdAt: serverTimestamp(),
+            createdAt: new Date().toISOString(),
             status: 'pending',
-        });
+        }]);
     };
 
     const submitClaim = async (claimData: Omit<Claim, 'id' | 'createdAt' | 'status'>) => {
-        await addDoc(collection(db, 'claims'), {
+        await supabase.from('claims').insert([{
             ...claimData,
-            createdAt: serverTimestamp(),
+            createdAt: new Date().toISOString(),
             status: 'pending',
-        });
+        }]);
     };
 
     const resolveComplaint = async (complaintId: string, action: 'dismiss' | 'deleteItem') => {
         const complaint = complaints.find(c => c.id === complaintId);
-        const batch = writeBatch(db);
         
-        const complaintRef = doc(db, 'complaints', complaintId);
-        batch.update(complaintRef, { status: 'resolved' });
+        await supabase.from('complaints').update({ status: 'resolved' }).eq('id', complaintId);
 
         if (action === 'deleteItem' && complaint) {
-            const itemRef = doc(db, 'items', complaint.itemId);
-            batch.delete(itemRef);
+            await supabase.from('items').delete().eq('id', complaint.itemId);
         }
-        await batch.commit();
     };
 
     const resolveClaim = async (claimId: string, status: ClaimStatus) => {
         const claim = claims.find(c => c.id === claimId);
-        const batch = writeBatch(db);
 
-        const claimRef = doc(db, 'claims', claimId);
-        batch.update(claimRef, { status });
+        await supabase.from('claims').update({ status }).eq('id', claimId);
 
         if (status === 'approved' && claim) {
-            const lostItemRef = doc(db, 'lostItems', claim.lostItemId);
-            batch.update(lostItemRef, { claimedBy: claim.claimantId });
+            await supabase.from('lost_items').update({ claimedBy: claim.claimantId }).eq('id', claim.lostItemId);
         }
-        await batch.commit();
     };
 
     const value = {
@@ -212,8 +205,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     );
 };
 
-
-// --- HOOK ---
 export const useData = () => {
     const context = useContext(DataContext);
     if (context === undefined) {

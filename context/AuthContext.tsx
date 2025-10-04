@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { User, Role } from '../types';
-import { auth, db } from '../firebase';
+import { auth } from '../firebase';
+import { supabase } from '../supabase';
 import { 
     onAuthStateChanged, 
     signInWithEmailAndPassword, 
@@ -10,9 +11,7 @@ import {
     signInWithPopup,
     User as FirebaseUser
 } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
 
-// --- CONTEXT TYPE ---
 interface AuthContextType {
     user: User | null;
     loading: boolean;
@@ -24,7 +23,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// --- PROVIDER COMPONENT ---
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
@@ -32,18 +30,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
             if (firebaseUser) {
-                const userDocRef = doc(db, 'users', firebaseUser.uid);
-                const userDoc = await getDoc(userDocRef);
-                if (userDoc.exists()) {
-                    const userData = userDoc.data();
-                    setUser({ 
-                        id: userDoc.id,
-                        ...userData,
-                        wishlist: userData.wishlist || []
-                    } as User);
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('id', firebaseUser.uid)
+                    .single();
+
+                if (data && !error) {
+                    setUser(data as User);
                 } else {
-                    console.warn("User exists in Auth but not in Firestore. This may happen during Google Sign-Up.");
-                    // The user will be created in googleLogin if they are new.
+                    console.warn("User exists in Auth but not in Supabase database.");
                 }
             } else {
                 setUser(null);
@@ -68,7 +64,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const userCredential = await createUserWithEmailAndPassword(auth, userData.email, userData.password);
             const firebaseUser = userCredential.user;
             
-            const newUser: Omit<User, 'id'> = {
+            const newUser: User = {
+                id: firebaseUser.uid,
                 fullName: userData.fullName,
                 email: userData.email,
                 regNo: userData.regNo,
@@ -83,10 +80,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 isSuspended: false,
             };
             
-            await setDoc(doc(db, 'users', firebaseUser.uid), newUser);
+            const { error } = await supabase.from('users').insert([newUser]);
+            if (error) throw error;
             return true;
        } catch (error) {
-           console.error("Firebase signup failed:", error);
+           console.error("Signup failed:", error);
            return false;
        }
     };
@@ -97,15 +95,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const result = await signInWithPopup(auth, provider);
             const firebaseUser = result.user;
 
-            const userDocRef = doc(db, 'users', firebaseUser.uid);
-            const userDoc = await getDoc(userDocRef);
+            const { data: existingUser } = await supabase
+                .from('users')
+                .select('*')
+                .eq('id', firebaseUser.uid)
+                .single();
 
-            // If user doesn't exist in Firestore, create a new profile.
-            if (!userDoc.exists()) {
-                 const newUser: Omit<User, 'id'> = {
+            if (!existingUser) {
+                const newUser: User = {
+                    id: firebaseUser.uid,
                     fullName: firebaseUser.displayName || 'VIT Student',
                     email: firebaseUser.email || '',
-                    // These fields would need to be collected in a post-signup step
                     regNo: 'TBD',
                     branch: 'TBD',
                     year: 1,
@@ -117,7 +117,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     wishlist: [],
                     isSuspended: false,
                 };
-                await setDoc(userDocRef, newUser);
+                await supabase.from('users').insert([newUser]);
             }
             return true;
         } catch (error) {
@@ -125,7 +125,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             return false;
         }
     };
-
 
     const logout = () => {
         signOut(auth);
@@ -138,7 +137,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     );
 };
 
-// --- HOOK ---
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (context === undefined) {
