@@ -16,7 +16,22 @@ This project has been fully migrated to use Supabase for database and storage wh
 
 ## Recent Changes (October 4, 2025)
 
-### Replit Environment Setup (Latest - GitHub Import Complete)
+### Authentication Enhancements (Latest - All Features Complete)
+- ✅ **Email Verification**: Sign-up now sends verification emails via Firebase Auth
+  - Users must verify their email before logging in
+  - Login blocked for unverified accounts with clear messaging
+- ✅ **Google Sign-In**: Properly configured with Firebase popup authentication
+  - Auto-creates Supabase user records for new Google accounts
+  - Works seamlessly with existing authentication flow
+- ✅ **Profile Pictures**: 
+  - New users get random default avatars using UI Avatars API
+  - Camera icon overlay on profile pictures for easy uploads
+  - Upload functionality with 5MB size limit and image preview
+  - Profile pictures stored in Supabase Storage
+  - Real-time UI updates after upload via refreshUser function
+- ✅ **User Context Refresh**: Added refreshUser() to AuthContext for state synchronization
+
+### Replit Environment Setup (GitHub Import Complete)
 - ✅ Successfully imported GitHub repository to Replit
 - ✅ Installed all npm dependencies (183 packages)
 - ✅ Configured workflow to run on port 5000 with proper host settings
