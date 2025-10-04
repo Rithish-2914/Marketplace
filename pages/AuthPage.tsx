@@ -51,7 +51,6 @@ const AuthPage: React.FC = () => {
     const handleGoogleLogin = async () => {
         setIsLoading(true);
         await googleLogin();
-        // No need to set loading to false, as onAuthStateChanged will trigger a re-render
     }
 
     const toggleForm = () => {
@@ -68,26 +67,26 @@ const AuthPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 px-4 transition-colors duration-300">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cream-100 via-white to-cream-200 px-4">
             <div className="w-full max-w-md">
-                <div className="text-center mb-8">
-                    <h1 className="text-4xl sm:text-5xl font-black text-primary-500">SwapHands</h1>
-                    <p className="text-gray-600 dark:text-gray-300 mt-2">The official marketplace for VIT students.</p>
+                <div className="text-center mb-10 animate-fade-in-down">
+                    <h1 className="text-6xl sm:text-7xl font-black text-black tracking-tight">SwapHands</h1>
+                    <p className="text-gray-700 mt-3 text-lg font-semibold">The official marketplace for VIT students.</p>
                 </div>
                 
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 animate-fade-in-down">
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-6">{isLogin ? 'Welcome Back!' : 'Create Your Account'}</h2>
+                <div className="bg-white rounded-3xl shadow-2xl p-10 animate-fade-in-down border-2 border-cream-200">
+                    <h2 className="text-3xl font-black text-black text-center mb-8">{isLogin ? 'Welcome Back!' : 'Create Account'}</h2>
                     
-                    {error && <p className="bg-red-100 text-red-700 p-3 rounded-lg mb-4 text-sm">{error}</p>}
+                    {error && <p className="bg-red-50 text-red-600 p-4 rounded-2xl mb-6 text-sm font-semibold border border-red-200">{error}</p>}
                     
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-5">
                         {!isLogin && (
                             <>
-                                <input type="text" placeholder="Full Name" value={fullName} onChange={e => setFullName(e.target.value)} required className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
-                                <input type="text" placeholder="Registration No." value={regNo} onChange={e => setRegNo(e.target.value)} required className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                                <input type="text" placeholder="Full Name" value={fullName} onChange={e => setFullName(e.target.value)} required className="w-full px-5 py-4 bg-cream-50 text-black font-semibold rounded-2xl focus:outline-none focus:ring-4 focus:ring-black/10 border border-cream-300 placeholder-gray-500" />
+                                <input type="text" placeholder="Registration No." value={regNo} onChange={e => setRegNo(e.target.value)} required className="w-full px-5 py-4 bg-cream-50 text-black font-semibold rounded-2xl focus:outline-none focus:ring-4 focus:ring-black/10 border border-cream-300 placeholder-gray-500" />
                                 <div className="grid grid-cols-2 gap-4">
-                                     <input type="text" placeholder="Branch (e.g., CSE)" value={branch} onChange={e => setBranch(e.target.value)} required className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
-                                     <select value={year} onChange={e => setYear(parseInt(e.target.value))} required className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                     <input type="text" placeholder="Branch (CSE)" value={branch} onChange={e => setBranch(e.target.value)} required className="w-full px-5 py-4 bg-cream-50 text-black font-semibold rounded-2xl focus:outline-none focus:ring-4 focus:ring-black/10 border border-cream-300 placeholder-gray-500" />
+                                     <select value={year} onChange={e => setYear(parseInt(e.target.value))} required className="w-full px-5 py-4 bg-cream-50 text-black font-semibold rounded-2xl focus:outline-none focus:ring-4 focus:ring-black/10 border border-cream-300">
                                         <option value={1}>1st Year</option>
                                         <option value={2}>2nd Year</option>
                                         <option value={3}>3rd Year</option>
@@ -95,14 +94,14 @@ const AuthPage: React.FC = () => {
                                         <option value={5}>5th Year</option>
                                      </select>
                                 </div>
-                                <input type="text" placeholder="Hostel Block" value={hostelBlock} onChange={e => setHostelBlock(e.target.value)} required className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                                <input type="text" placeholder="Hostel Block" value={hostelBlock} onChange={e => setHostelBlock(e.target.value)} required className="w-full px-5 py-4 bg-cream-50 text-black font-semibold rounded-2xl focus:outline-none focus:ring-4 focus:ring-black/10 border border-cream-300 placeholder-gray-500" />
 
                             </>
                         )}
-                        <input type="email" placeholder="VIT Email Address" value={email} onChange={e => setEmail(e.target.value)} required className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
-                        <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                        <input type="email" placeholder="VIT Email Address" value={email} onChange={e => setEmail(e.target.value)} required className="w-full px-5 py-4 bg-cream-50 text-black font-semibold rounded-2xl focus:outline-none focus:ring-4 focus:ring-black/10 border border-cream-300 placeholder-gray-500" />
+                        <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required className="w-full px-5 py-4 bg-cream-50 text-black font-semibold rounded-2xl focus:outline-none focus:ring-4 focus:ring-black/10 border border-cream-300 placeholder-gray-500" />
                         {!isLogin && (
-                            <input type="password" placeholder="Confirm Password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                            <input type="password" placeholder="Confirm Password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required className="w-full px-5 py-4 bg-cream-50 text-black font-semibold rounded-2xl focus:outline-none focus:ring-4 focus:ring-black/10 border border-cream-300 placeholder-gray-500" />
                         )}
                         
                         <AnimatedButton type="submit" className="w-full" disabled={isLoading}>
@@ -110,22 +109,20 @@ const AuthPage: React.FC = () => {
                         </AnimatedButton>
                     </form>
 
-                    <div className="my-6 flex items-center">
-                        <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
-                        <span className="flex-shrink mx-4 text-gray-500 dark:text-gray-400 text-sm">OR</span>
-                        <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+                    <div className="my-8 flex items-center">
+                        <div className="flex-grow border-t-2 border-cream-300"></div>
+                        <span className="flex-shrink mx-6 text-gray-600 text-sm font-bold">OR</span>
+                        <div className="flex-grow border-t-2 border-cream-300"></div>
                     </div>
 
-                    <button onClick={handleGoogleLogin} disabled={isLoading} className="w-full flex items-center justify-center px-4 py-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50">
+                    <button onClick={handleGoogleLogin} disabled={isLoading} className="w-full flex items-center justify-center px-6 py-4 bg-white border-2 border-black rounded-2xl shadow-md hover:bg-cream-50 hover:scale-105 transition-all duration-300 disabled:opacity-50 font-bold">
                         <GoogleIcon />
-                        <span className="ml-3 font-medium text-gray-800 dark:text-gray-200">Continue with Google</span>
+                        <span className="ml-3 text-black">Continue with Google</span>
                     </button>
                     
-                    <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-6">
+                    <p className="text-center text-sm text-gray-700 mt-8 font-semibold">
                         {isLogin ? "Don't have an account?" : "Already have an account?"}
-                        <button onClick={toggleForm} className="font-medium text-primary-500 hover:underline ml-1">
-                            {isLogin ? 'Sign Up' : 'Log In'}
-                        </button>
+                        <button type="button" onClick={toggleForm} className="ml-2 text-black underline font-black hover:no-underline">{isLogin ? 'Sign Up' : 'Log In'}</button>
                     </p>
                 </div>
             </div>

@@ -27,41 +27,41 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, seller, onMessage, onCardClic
 
     return (
         <div 
-            className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden transform hover:-translate-y-1.5 transition-transform duration-300 ease-in-out flex flex-col cursor-pointer"
+            className="bg-white rounded-3xl shadow-xl overflow-hidden transform hover:-translate-y-2 hover:shadow-2xl transition-all duration-500 ease-out flex flex-col cursor-pointer border border-cream-300 group"
             onClick={() => onCardClick(item)}
             aria-label={`View details for ${item.title}`}
         >
-            <div className="relative">
-                <img className="w-full h-48 object-cover" src={item.imageUrl} alt={item.title} loading="lazy"/>
-                <div className="absolute top-3 left-3 bg-primary-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-md">
+            <div className="relative overflow-hidden">
+                <img className="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-700 ease-out" src={item.imageUrl} alt={item.title} loading="lazy"/>
+                <div className="absolute top-4 left-4 bg-black text-white text-xs font-black px-3 py-1.5 rounded-full shadow-lg uppercase tracking-wide">
                     {item.condition}
                 </div>
-                 <button onClick={handleWishlistToggle} aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'} className="absolute top-2 right-2 bg-white/70 dark:bg-gray-800/70 p-2 rounded-full backdrop-blur-sm transition-colors duration-200 hover:bg-red-100 dark:hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 transition-all duration-200 ${isWishlisted ? 'text-red-500' : 'text-gray-500 dark:text-gray-300'}`} fill={isWishlisted ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                 <button onClick={handleWishlistToggle} aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'} className="absolute top-4 right-4 bg-white/90 p-2.5 rounded-full backdrop-blur-sm transition-all duration-300 hover:scale-110 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 transition-all duration-300 ${isWishlisted ? 'text-red-500 scale-110' : 'text-gray-600'}`} fill={isWishlisted ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.5l1.318-1.182a4.5 4.5 0 116.364 6.364L12 20.25l-7.682-7.682a4.5 4.5 0 010-6.364z" />
                     </svg>
                 </button>
             </div>
-            <div className="p-4 flex flex-col flex-grow">
-                <p className="text-sm text-gray-500 dark:text-gray-400">{item.category}</p>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate mt-1">{item.title}</h3>
-                <p className="text-2xl font-black text-primary-500 dark:text-primary-400 my-2">₹{item.price}</p>
+            <div className="p-5 flex flex-col flex-grow bg-gradient-to-b from-white to-cream-50">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{item.category}</p>
+                <h3 className="text-xl font-black text-black truncate mt-2">{item.title}</h3>
+                <p className="text-3xl font-black text-black my-3 tracking-tight">₹{item.price}</p>
                 
-                <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 mt-auto pt-2 border-t border-gray-100 dark:border-gray-700">
-                    <img src={seller?.profilePictureUrl} alt={seller?.fullName} className="w-6 h-6 rounded-full mr-2"/>
+                <div className="flex items-center text-xs text-gray-600 mt-auto pt-3 border-t border-cream-200">
+                    <img src={seller?.profilePictureUrl} alt={seller?.fullName} className="w-8 h-8 rounded-full mr-3 border-2 border-cream-300"/>
                     <div className="flex-grow">
-                        <p className="font-semibold text-gray-700 dark:text-gray-300">{seller?.fullName || '...'}</p>
-                        <div className="flex items-center">
-                           <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-accent-500 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                        <p className="font-bold text-black">{seller?.fullName || '...'}</p>
+                        <div className="flex items-center mt-0.5">
+                           <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-black mr-1" viewBox="0 0 20 20" fill="currentColor">
                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                            </svg>
-                           <span>{seller?.rating} ({seller?.ratingsCount} ratings)</span>
+                           <span className="font-semibold">{seller?.rating} ({seller?.ratingsCount})</span>
                         </div>
                     </div>
                 </div>
                 
                 <div className="mt-4">
-                   <button onClick={handleMessageClick} className="w-full text-sm py-2.5 px-4 font-bold text-white bg-primary-500 rounded-lg hover:bg-primary-600 focus:outline-none focus:ring-4 focus:ring-primary-300 transition-all duration-200">
+                   <button onClick={handleMessageClick} className="w-full text-sm py-3 px-4 font-black text-white bg-black rounded-2xl hover:bg-gray-800 focus:outline-none focus:ring-4 focus:ring-gray-400 transition-all duration-300 transform hover:scale-105 shadow-lg">
                        Message Seller
                    </button>
                 </div>

@@ -46,9 +46,9 @@ const StudentApp: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300">
+        <div className="min-h-screen bg-gradient-to-br from-cream-100 via-white to-cream-200 text-black">
             <Header onNavigate={handleNavigate} onSearch={setSearchQuery} activePage={activePage} />
-            <main className="container mx-auto p-4 sm:p-6 md:p-8">
+            <main className="container mx-auto p-6 sm:p-8 md:p-12">
                 {renderPage()}
             </main>
             {claimingItem && <ClaimItemModal item={claimingItem} onClose={() => setClaimingItem(null)} />}

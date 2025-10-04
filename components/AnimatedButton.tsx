@@ -3,14 +3,16 @@ import React from 'react';
 interface AnimatedButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     children: React.ReactNode;
     className?: string;
-    variant?: 'primary';
+    variant?: 'primary' | 'secondary' | 'outline';
 }
 
 const AnimatedButton: React.FC<AnimatedButtonProps> = ({ children, className = '', variant = 'primary', ...props }) => {
-    const baseClasses = 'px-6 py-3 font-bold text-white rounded-lg transform transition-all duration-200 ease-in-out focus:outline-none focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed';
+    const baseClasses = 'px-8 py-4 font-black rounded-2xl transform transition-all duration-300 ease-out focus:outline-none focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wide text-sm shadow-xl';
     
     const variantClasses = {
-        primary: 'bg-primary-500 border-b-4 border-primary-700 hover:bg-primary-600 hover:border-primary-800 active:bg-primary-700 active:border-primary-700 active:translate-y-1 focus:ring-primary-300 dark:focus:ring-primary-800',
+        primary: 'bg-black text-white hover:bg-gray-800 hover:scale-105 active:scale-95 focus:ring-gray-400',
+        secondary: 'bg-cream-200 text-black hover:bg-cream-300 hover:scale-105 active:scale-95 focus:ring-cream-400',
+        outline: 'bg-transparent text-black border-2 border-black hover:bg-black hover:text-white hover:scale-105 active:scale-95 focus:ring-gray-400',
     };
 
     return (
