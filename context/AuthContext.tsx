@@ -39,7 +39,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 if (data && !error) {
                     setUser(data as User);
                 } else {
-                    console.warn("User exists in Auth but not in Supabase database.");
+                    console.warn("User exists in Auth but not in Supabase database. Creating user record...");
+                    
+                    const newUser: User = {
+                        id: firebaseUser.uid,
+                        fullName: firebaseUser.displayName || 'VIT Student',
+                        email: firebaseUser.email || '',
+                        regNo: 'UPDATE_ME',
+                        branch: 'UPDATE_ME',
+                        year: 1,
+                        hostelBlock: 'UPDATE_ME',
+                        role: firebaseUser.email?.endsWith('@vit.ac.in') ? Role.ADMIN : Role.STUDENT,
+                        profilePictureUrl: firebaseUser.photoURL || `https://i.pravatar.cc/150?u=${firebaseUser.uid}`,
+                        rating: 0,
+                        ratingsCount: 0,
+                        wishlist: [],
+                        isSuspended: false,
+                    };
+                    
+                    const { error: insertError } = await supabase.from('users').insert([newUser]);
+                    if (!insertError) {
+                        setUser(newUser);
+                        console.log("User record created successfully!");
+                    } else {
+                        console.error("Failed to create user record:", insertError);
+                    }
                 }
             } else {
                 setUser(null);
