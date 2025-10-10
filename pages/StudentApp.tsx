@@ -46,7 +46,7 @@ const StudentApp: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-cream-100 via-white to-cream-200 text-black">
+        <div className="min-h-screen bg-gradient-to-br from-cream-100 via-white to-cream-200 text-black dark:bg-gray-900 dark:text-gray-100">
             <Header onNavigate={handleNavigate} onSearch={setSearchQuery} activePage={activePage} />
             <main className="container mx-auto p-6 sm:p-8 md:p-12">
                 {renderPage()}
