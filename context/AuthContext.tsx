@@ -135,17 +135,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
     const googleLogin = async (): Promise<boolean> => {
         try {
+            console.log('Starting Google login...');
             const provider = new GoogleAuthProvider();
             const result = await signInWithPopup(auth, provider);
             const firebaseUser = result.user;
+            console.log('Firebase auth successful:', firebaseUser.email);
 
-            const { data: existingUser } = await supabase
+            console.log('Checking if user exists in Supabase...');
+            const { data: existingUser, error: checkError } = await supabase
                 .from('users')
                 .select('*')
                 .eq('id', firebaseUser.uid)
                 .single();
 
+            if (checkError && checkError.code !== 'PGRST116') {
+                console.error('Error checking user:', checkError);
+            }
+
             if (!existingUser) {
+                console.log('Creating new user in Supabase...');
                 const newUser: User = {
                     id: firebaseUser.uid,
                     fullName: firebaseUser.displayName || 'VIT Student',
@@ -161,11 +169,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     wishlist: [],
                     isSuspended: false,
                 };
-                await supabase.from('users').insert([newUser]);
+                const { error: insertError } = await supabase.from('users').insert([newUser]);
+                if (insertError) {
+                    console.error('Error creating user:', insertError);
+                    alert(`Failed to create user: ${insertError.message}`);
+                    return false;
+                }
+                console.log('User created successfully!');
+            } else {
+                console.log('User already exists in Supabase');
             }
             return true;
-        } catch (error) {
+        } catch (error: any) {
             console.error("Google login failed:", error);
+            alert(`Google login failed: ${error?.message || 'Unknown error'}`);
             return false;
         }
     };
