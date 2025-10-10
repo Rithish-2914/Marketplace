@@ -28,7 +28,7 @@ interface DataContextType {
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const { user } = useAuth();
+    const { user, refreshUser } = useAuth();
     const [users, setUsers] = useState<User[]>([]);
     const [items, setItems] = useState<Item[]>([]);
     const [lostItems, setLostItems] = useState<LostItem[]>([]);
@@ -195,6 +195,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             : [...userWishlist, id];
         
         await supabase.from('users').update({ wishlist: newWishlist }).eq('id', user.id);
+        await refreshUser();
     };
 
     const isInWishlist = useCallback((id: string) => {
