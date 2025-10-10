@@ -574,7 +574,7 @@ const RateSeller: React.FC<{ sellerId: string }> = ({ sellerId }) => {
 // Sub-component: Profile Page
 const ProfilePage: React.FC = () => {
     const { user, refreshUser } = useAuth();
-    const { updateUser } = useData();
+    const { updateUser, items, removeItem } = useData();
     const [isEditing, setIsEditing] = useState(false);
     const [isUploadingPicture, setIsUploadingPicture] = useState(false);
     
@@ -586,6 +586,14 @@ const ProfilePage: React.FC = () => {
     const [imagePreview, setImagePreview] = useState<string | null>(null);
 
     if (!user) return null;
+
+    const myListings = items.filter(item => item.sellerId === user.id);
+
+    const handleDeleteItem = async (itemId: string) => {
+        if (window.confirm('Are you sure you want to delete this listing?')) {
+            await removeItem(itemId);
+        }
+    };
 
     const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -721,6 +729,37 @@ const ProfilePage: React.FC = () => {
                         </div>
                     )}
                 </div>
+            </div>
+
+            {/* My Listings Section */}
+            <div className="mt-8">
+                <h3 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">My Listings</h3>
+                {myListings.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {myListings.map(item => (
+                            <div key={item.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+                                <img src={item.imageUrl} alt={item.title} className="w-full h-40 object-cover" />
+                                <div className="p-4">
+                                    <h4 className="font-bold text-lg truncate">{item.title}</h4>
+                                    <p className="text-xl font-bold text-primary-500 mt-1">₹{item.price}</p>
+                                    <div className="flex items-center justify-between mt-3">
+                                        <span className={`text-xs px-2 py-1 rounded-full ${item.isSold ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                                            {item.isSold ? 'Sold' : 'Available'}
+                                        </span>
+                                        <button 
+                                            onClick={() => handleDeleteItem(item.id)}
+                                            className="text-sm text-red-500 hover:text-red-700 font-semibold"
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-center text-gray-500 dark:text-gray-400 py-8">You haven't listed any items yet. Go to the Sell page to list your first item!</p>
+                )}
             </div>
         </div>
     );
