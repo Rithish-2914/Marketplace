@@ -4,7 +4,9 @@ export const uploadImageToSupabase = async (file: File, bucket: string, path: st
     const fileName = `${Date.now()}_${file.name}`;
     const filePath = `${path}/${fileName}`;
 
-    const { error: uploadError } = await supabase.storage
+    console.log('Uploading to Supabase:', { bucket, filePath, fileName });
+
+    const { error: uploadError, data: uploadData } = await supabase.storage
         .from(bucket)
         .upload(filePath, file, {
             cacheControl: '3600',
@@ -12,12 +14,17 @@ export const uploadImageToSupabase = async (file: File, bucket: string, path: st
         });
 
     if (uploadError) {
-        throw new Error(`Upload failed: ${uploadError.message}`);
+        console.error('Supabase upload error:', uploadError);
+        throw new Error(`Upload failed: ${uploadError.message || JSON.stringify(uploadError)}`);
     }
+
+    console.log('Upload successful:', uploadData);
 
     const { data } = supabase.storage
         .from(bucket)
         .getPublicUrl(filePath);
+
+    console.log('Public URL:', data.publicUrl);
 
     return data.publicUrl;
 };

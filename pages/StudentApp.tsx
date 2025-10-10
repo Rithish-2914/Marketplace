@@ -614,9 +614,10 @@ const ProfilePage: React.FC = () => {
             setSelectedImage(null);
             setImagePreview(null);
             alert('Profile picture updated successfully!');
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to upload profile picture:', error);
-            alert('Failed to upload profile picture. Please try again.');
+            const errorMessage = error?.message || 'Unknown error occurred';
+            alert(`Failed to upload profile picture: ${errorMessage}\n\nPlease make sure you've set up Supabase storage buckets correctly.`);
         } finally {
             setIsUploadingPicture(false);
         }
