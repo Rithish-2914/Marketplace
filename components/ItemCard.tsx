@@ -16,6 +16,8 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, seller, onMessage, onCardClic
     const isWishlisted = isInWishlist(item.id);
     const isOwnItem = user?.id === item.sellerId;
 
+    console.log('ItemCard - Image URL:', item.imageUrl);
+
     const handleWishlistToggle = async (e: React.MouseEvent) => {
         e.stopPropagation();
         await toggleWishlist(item.id);
