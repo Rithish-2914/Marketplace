@@ -15,11 +15,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     autoRefreshToken: true,
   },
-  global: {
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  },
   // Enable automatic snake_case to camelCase conversion
   realtime: {
     params: {
