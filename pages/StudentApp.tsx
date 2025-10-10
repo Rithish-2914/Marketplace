@@ -103,7 +103,7 @@ const DashboardPage: React.FC<{ searchQuery: string; onSelectItem: (item: Item) 
     return (
         <div>
             <div className="text-center mb-8">
-                <h2 className="text-3xl font-extrabold text-gray-800 dark:text-white">Dashboard</h2>
+                <h2 className="text-3xl font-extrabold text-black dark:text-white">Dashboard</h2>
                 <p className="text-gray-500 dark:text-gray-400 mt-1 md:hidden">Swipe to discover new items</p>
                 <p className="text-gray-500 dark:text-gray-400 mt-1 hidden md:block">Recently listed items</p>
             </div>
