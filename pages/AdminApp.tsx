@@ -49,7 +49,7 @@ const UsersPage: React.FC = () => {
     const { users, items, toggleSuspendUser } = useData();
     return (
         <div>
-             <h2 className="text-3xl font-extrabold mb-6 text-gray-800 dark:text-white">Manage Users</h2>
+             <h2 className="text-3xl font-extrabold mb-6 !text-black dark:text-white">Manage Users</h2>
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                  {users.map(user => {
                      const userListings = items.filter(i => i.sellerId === user.id).length;
@@ -85,7 +85,7 @@ const ListingsPage: React.FC = () => {
     const { items, removeItem, getUserById } = useData();
     return (
         <div>
-             <h2 className="text-3xl font-extrabold mb-6 text-gray-800 dark:text-white">Manage Listings</h2>
+             <h2 className="text-3xl font-extrabold mb-6 !text-black dark:text-white">Manage Listings</h2>
              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                  {items.map(item => {
                      const seller = getUserById(item.sellerId);
@@ -117,7 +117,7 @@ const ComplaintsPage: React.FC = () => {
 
     return (
          <div>
-             <h2 className="text-3xl font-extrabold mb-6 text-gray-800 dark:text-white">Review Complaints</h2>
+             <h2 className="text-3xl font-extrabold mb-6 !text-black dark:text-white">Review Complaints</h2>
              {pendingComplaints.length > 0 ? (
                 <div className="space-y-4">
                     {pendingComplaints.map(complaint => {
@@ -163,7 +163,7 @@ const LostAndFoundPage: React.FC = () => {
     return (
         <div className="space-y-12">
             <div>
-                 <h2 className="text-3xl font-extrabold mb-6 text-gray-800 dark:text-white">Review Claims</h2>
+                 <h2 className="text-3xl font-extrabold mb-6 !text-black dark:text-white">Review Claims</h2>
                  {pendingClaims.length > 0 ? (
                     <div className="space-y-4">
                         {pendingClaims.map(claim => {
@@ -197,7 +197,7 @@ const LostAndFoundPage: React.FC = () => {
                  )}
             </div>
              <div>
-                <h3 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Post a Found Item</h3>
+                <h3 className="text-2xl font-bold mb-4 !text-black dark:text-white">Post a Found Item</h3>
                  <form onSubmit={handleSubmit} className="space-y-4 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md max-w-lg">
                      <input type="text" placeholder="Item Name" value={name} onChange={e => setName(e.target.value)} required className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
                      <textarea placeholder="Description" value={description} onChange={e => setDescription(e.target.value)} required rows={3} className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"></textarea>
