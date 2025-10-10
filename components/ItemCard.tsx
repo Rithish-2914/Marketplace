@@ -1,6 +1,7 @@
 import React from 'react';
 import { Item, User } from '../types';
 import { useData } from '../context/DataContext';
+import { useAuth } from '../context/AuthContext';
 
 interface ItemCardProps {
     item: Item;
@@ -10,12 +11,14 @@ interface ItemCardProps {
 }
 
 const ItemCard: React.FC<ItemCardProps> = ({ item, seller, onMessage, onCardClick }) => {
-    const { toggleWishlist, isInWishlist } = useData();
+    const { toggleWishlist, isInWishlist, removeItem } = useData();
+    const { user } = useAuth();
     const isWishlisted = isInWishlist(item.id);
+    const isOwnItem = user?.id === item.sellerId;
 
-    const handleWishlistToggle = (e: React.MouseEvent) => {
+    const handleWishlistToggle = async (e: React.MouseEvent) => {
         e.stopPropagation();
-        toggleWishlist(item.id);
+        await toggleWishlist(item.id);
     };
     
     const handleMessageClick = (e: React.MouseEvent) => {
@@ -23,7 +26,20 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, seller, onMessage, onCardClic
         if(seller) {
             onMessage(seller);
         }
-    }
+    };
+
+    const handleDelete = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (window.confirm('Are you sure you want to delete this listing?')) {
+            await removeItem(item.id);
+        }
+    };
+
+    const handleMarkAsSold = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        // Will implement this
+        alert('Mark as sold feature coming soon!');
+    };
 
     return (
         <div 
@@ -61,9 +77,20 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, seller, onMessage, onCardClic
                 </div>
                 
                 <div className="mt-4">
-                   <button onClick={handleMessageClick} className="w-full text-sm py-3 px-4 font-black text-white bg-black rounded-2xl hover:bg-gray-800 focus:outline-none focus:ring-4 focus:ring-gray-400 transition-all duration-300 transform hover:scale-105 shadow-lg">
-                       Message Seller
-                   </button>
+                   {isOwnItem ? (
+                       <div className="flex gap-2">
+                           <button onClick={handleMarkAsSold} className="flex-1 text-sm py-3 px-4 font-black text-white bg-green-600 rounded-2xl hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-400 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                               {item.isSold ? 'Sold' : 'Mark Sold'}
+                           </button>
+                           <button onClick={handleDelete} className="flex-1 text-sm py-3 px-4 font-black text-white bg-red-600 rounded-2xl hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-400 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                               Delete
+                           </button>
+                       </div>
+                   ) : (
+                       <button onClick={handleMessageClick} className="w-full text-sm py-3 px-4 font-black text-white bg-black rounded-2xl hover:bg-gray-800 focus:outline-none focus:ring-4 focus:ring-gray-400 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                           Message Seller
+                       </button>
+                   )}
                 </div>
             </div>
         </div>
