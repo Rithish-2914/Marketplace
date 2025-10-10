@@ -165,7 +165,7 @@ const BrowsePage: React.FC<{ searchQuery: string; onSelectItem: (item: Item) => 
 
     return (
         <div>
-            <h2 className="text-3xl font-extrabold mb-6 text-gray-800 dark:text-white">Browse All Items</h2>
+            <h2 className="text-3xl font-extrabold mb-6 !text-black dark:text-white">Browse All Items</h2>
             <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md mb-6 flex flex-col sm:flex-row gap-4 items-center">
                 <div className="flex-grow w-full sm:w-auto">
                     <label htmlFor="category" className="sr-only">Category</label>
@@ -215,7 +215,7 @@ const WishlistPage: React.FC<{ searchQuery: string; onSelectItem: (item: Item) =
 
     return (
         <div>
-            <h2 className="text-3xl font-extrabold mb-6 text-gray-800 dark:text-white">My Wishlist</h2>
+            <h2 className="text-3xl font-extrabold mb-6 !text-black dark:text-white">My Wishlist</h2>
             {wishlistedItems.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {wishlistedItems.map(item => {
@@ -314,7 +314,7 @@ const SellItemPage: React.FC<{ onPostSuccess: () => void }> = ({ onPostSuccess }
 
     return (
         <div className="max-w-2xl mx-auto">
-            <h2 className="text-3xl font-extrabold mb-6 text-gray-800 dark:text-white">Sell a New Item</h2>
+            <h2 className="text-3xl font-extrabold mb-6 !text-black dark:text-white">Sell a New Item</h2>
             <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg space-y-6">
                 
                 <label htmlFor="file-upload" className="cursor-pointer">
@@ -381,7 +381,7 @@ const LostAndFoundPage: React.FC<{ onClaimItem: (item: LostItem) => void }> = ({
     return (
         <div>
             <div className="mb-6">
-                <h2 className="text-3xl font-extrabold text-gray-800 dark:text-white">Lost & Found</h2>
+                <h2 className="text-3xl font-extrabold !text-black dark:text-white">Lost & Found</h2>
                 <p className="text-gray-500 dark:text-gray-400 mt-1">Found something? Please report it to the admin. See an item you lost? You can claim it here.</p>
             </div>
             <div className="space-y-4">
@@ -641,7 +641,7 @@ const ProfilePage: React.FC = () => {
     return (
         <div>
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-3xl font-extrabold text-gray-800 dark:text-white">My Profile</h2>
+                <h2 className="text-3xl font-extrabold !text-black dark:text-white">My Profile</h2>
                 <AnimatedButton onClick={() => setIsEditing(!isEditing)}>
                     {isEditing ? 'Cancel' : 'Edit Profile'}
                 </AnimatedButton>
@@ -733,7 +733,7 @@ const ProfilePage: React.FC = () => {
 
             {/* My Listings Section */}
             <div className="mt-8">
-                <h3 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">My Listings</h3>
+                <h3 className="text-2xl font-bold mb-4 !text-black dark:text-white">My Listings</h3>
                 {myListings.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {myListings.map(item => (
