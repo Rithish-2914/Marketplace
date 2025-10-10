@@ -16,7 +16,22 @@ This project has been fully migrated to use Supabase for database and storage wh
 
 ## Recent Changes
 
-### Data Synchronization Fixes (October 10, 2025 - Latest)
+### In-App Messaging System (October 10, 2025 - Latest)
+- ✅ **Complete Messaging Implementation**: Users can now message each other about items
+  - Created `messages` table with sender, receiver, item, content, timestamp, and read status
+  - Implemented real-time message subscriptions for instant updates
+  - Built ChatModal component for one-on-one conversations
+  - Added MessagesPage inbox showing all conversations with unread counts
+  - Connected "Message Seller" buttons throughout the app
+  - Supports both item-specific and general conversations
+  - Proper null/undefined handling for conversation filtering
+  - Real-time unread badge updates when messages are marked as read
+- ✅ **Lost & Found Image Uploads**: Admin can now upload images when posting found items
+  - Integrated Supabase storage for found item images
+  - Added image preview and upload functionality to admin form
+  - Images stored in 'items' bucket alongside marketplace items
+
+### Data Synchronization Fixes (October 10, 2025)
 - ✅ **Fixed Database Field Conversions**: Resolved snake_case/camelCase mismatch between frontend and Supabase
   - All database writes now properly convert camelCase to snake_case
   - All database reads now properly convert snake_case to camelCase
@@ -85,10 +100,12 @@ This project has been fully migrated to use Supabase for database and storage wh
   - `AnimatedButton.tsx` - Animated button with hover/active states
   - `ItemCard.tsx` - Product card with floating effects
   - `Header.tsx` - Navigation with search
+  - `ChatModal.tsx` - In-app messaging modal for conversations
 - `/pages` - Main application pages
   - `StudentApp.tsx` - Student marketplace interface
   - `AdminApp.tsx` - Admin moderation panel
   - `AuthPage.tsx` - Login/signup with modern design
+  - `MessagesPage.tsx` - User inbox for all conversations
 - `/context` - React contexts for state management
   - `AuthContext.tsx` - Firebase auth + Supabase user data
   - `DataContext.tsx` - Supabase database operations
@@ -103,10 +120,11 @@ This project has been fully migrated to use Supabase for database and storage wh
 - **Authentication**: Firebase Email/Password & Google Sign-In
 - **User Management**: Profiles, ratings, suspension (admin)
 - **Marketplace**: List items, browse, search, wishlist
-- **Lost & Found**: Report found items, submit claims with proof
+- **Lost & Found**: Report found items with images, submit claims with proof
+- **In-App Messaging**: Real-time chat between users for item inquiries
 - **Admin Panel**: User management, complaint resolution, claim approval
 - **Real-time Updates**: Live data sync via Supabase subscriptions
-- **Image Upload**: Supabase Storage integration
+- **Image Upload**: Supabase Storage integration for items and claims
 - **Responsive Design**: Mobile-first approach with animations
 
 ## Database Schema (Supabase)
@@ -117,6 +135,7 @@ Tables:
 - `lost_items` - Found items waiting to be claimed
 - `complaints` - Item reports for moderation
 - `claims` - Lost item claim requests with proof
+- `messages` - In-app messaging between users (supports item-specific and general chats)
 
 Storage Buckets:
 - `items` - Product images
@@ -136,8 +155,9 @@ Firebase is configured in `firebase.ts` for authentication only. The existing cr
 ### Supabase Setup
 1. Create a Supabase project
 2. Run the `supabase-schema.sql` script in Supabase SQL Editor
-3. Create storage buckets: `items` and `claims` (both public)
-4. Add credentials to Replit Secrets
+3. Run the `supabase-messages-schema.sql` script for messaging feature
+4. Create storage buckets: `items` and `claims` (both public)
+5. Add credentials to Replit Secrets
 
 See `SETUP.md` for detailed setup instructions.
 
@@ -196,11 +216,12 @@ npm run build
 
 ### Nice to Have
 - [ ] Add image optimization before upload
-- [ ] Implement chat/messaging between users
-- [ ] Add push notifications for new items
+- [ ] Add push notifications for new messages
 - [ ] Create admin analytics dashboard
 - [ ] Add user verification badges
 - [ ] Implement item sorting and advanced filters
+- [ ] Add message attachments (images, files)
+- [ ] Implement message deletion and editing
 
 ## User Preferences
 No specific user preferences have been set yet.
