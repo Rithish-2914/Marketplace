@@ -297,13 +297,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
     const resolveClaim = async (claimId: string, status: ClaimStatus) => {
-        const claim = claims.find(c => c.id === claimId);
-
         await supabase.from('claims').update({ status }).eq('id', claimId);
-
-        if (status === 'approved' && claim) {
-            await supabase.from('lost_items').update({ claimed_by: claim.claimantId }).eq('id', claim.lostItemId);
-        }
     };
 
     const sendMessage = async (receiverId: string, content: string, itemId?: string) => {

@@ -454,6 +454,11 @@ const LostAndFoundPage: React.FC<{ onClaimItem: (item: LostItem) => void }> = ({
             <div className="mb-6">
                 <h2 className="text-3xl font-extrabold !text-black dark:text-white">Lost & Found</h2>
                 <p className="text-gray-500 dark:text-gray-400 mt-1">Found something? Please report it to the admin. See an item you lost? You can claim it here.</p>
+                <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded-r-lg">
+                    <p className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-2">AFTER CLAIMING, SUBMIT THE REQUIRED PROOFS:</p>
+                    <p className="text-sm text-blue-700 dark:text-blue-400">Submit proofs like bill receipt. In case of unavailability of the receipt, please write the model ID and submit.</p>
+                    <p className="text-sm text-blue-700 dark:text-blue-400 mt-1 font-medium">Once submitted, you will be updated after approval.</p>
+                </div>
             </div>
             <div className="space-y-4">
                  {lostItems.map(item => (

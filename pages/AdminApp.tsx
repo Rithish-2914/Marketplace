@@ -155,6 +155,7 @@ const LostAndFoundPage: React.FC = () => {
     const [itemImage, setItemImage] = useState<File | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const pendingClaims = claims.filter(c => c.status === 'pending');
+    const approvedClaims = claims.filter(c => c.status === 'approved');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -188,18 +189,41 @@ const LostAndFoundPage: React.FC = () => {
         <div className="space-y-12">
             <div>
                  <h2 className="text-3xl font-extrabold mb-6 !text-black dark:text-white">Review Claims</h2>
+                 
+                 {approvedClaims.length > 0 && (
+                    <div className="mb-8">
+                        <h3 className="text-lg font-bold text-green-600 dark:text-green-400 mb-3">✓ Approved Claims</h3>
+                        <div className="space-y-2">
+                            {approvedClaims.map(claim => {
+                                const item = lostItems.find(li => li.id === claim.lostItemId);
+                                const claimant = getUserById(claim.claimantId);
+                                if (!item || !claimant) return null;
+                                return (
+                                    <div key={claim.id} className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-700">
+                                        <p className="text-sm font-semibold text-green-800 dark:text-green-300">
+                                            {claimant.fullName} ({claimant.regNo}) - Approved for: {item.name}
+                                        </p>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                 )}
+
+                 <h3 className="text-lg font-bold text-gray-700 dark:text-gray-300 mb-3">Pending Claims</h3>
                  {pendingClaims.length > 0 ? (
                     <div className="space-y-4">
                         {pendingClaims.map(claim => {
                             const item = lostItems.find(li => li.id === claim.lostItemId);
                             const claimant = getUserById(claim.claimantId);
                             if (!item || !claimant) return null;
+                            const itemApprovedCount = approvedClaims.filter(c => c.lostItemId === claim.lostItemId).length;
                             return (
                                 <div key={claim.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
                                     <div className="flex flex-col md:flex-row md:items-start gap-4">
                                         <img src={item.imageUrl} alt={item.name} className="w-full md:w-24 h-24 object-cover rounded-md"/>
                                         <div className="flex-grow">
-                                            <h4 className="font-bold">Claim for: {item.name}</h4>
+                                            <h4 className="font-bold">Claim for: {item.name} {itemApprovedCount > 0 && <span className="text-green-600 text-sm">({itemApprovedCount} approved)</span>}</h4>
                                             <p className="text-sm font-semibold">Claimant: {claimant.fullName} ({claimant.regNo})</p>
                                             <p className="text-sm italic text-gray-600 dark:text-gray-300 mt-1">"{claim.comments}"</p>
                                              <div className="flex gap-4 mt-2">
