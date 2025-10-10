@@ -14,9 +14,25 @@ SwapHands is a full-featured marketplace platform designed for students at VIT V
 ## Project Status
 This project has been fully migrated to use Supabase for database and storage while keeping Firebase for authentication only. The UI has been redesigned with a modern white/cream/black color scheme and smooth animations.
 
-## Recent Changes (October 4, 2025)
+## Recent Changes
 
-### Authentication Enhancements (Latest - All Features Complete)
+### Data Synchronization Fixes (October 10, 2025 - Latest)
+- ✅ **Fixed Database Field Conversions**: Resolved snake_case/camelCase mismatch between frontend and Supabase
+  - All database writes now properly convert camelCase to snake_case
+  - All database reads now properly convert snake_case to camelCase
+  - Fixed: Items not appearing after creation
+  - Fixed: Profile picture updates not reflecting in UI
+  - Fixed: User data updates not persisting correctly
+- ✅ **Profile Page Enhancements**:
+  - Added "My Listings" section showing user's own items
+  - Users can now view and delete their listings from profile
+  - Shows listing status (Available/Sold)
+- ✅ **Wishlist Feature**: Already implemented and working
+  - Heart icon on item cards to add/remove from wishlist
+  - Dedicated Wishlist page to view saved items
+  - Real-time updates when items are wishlisted
+
+### Authentication Enhancements (October 4, 2025)
 - ✅ **Email Verification**: Sign-up now sends verification emails via Firebase Auth
   - Users must verify their email before logging in
   - Login blocked for unverified accounts with clear messaging
