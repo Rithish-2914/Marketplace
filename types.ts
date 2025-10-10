@@ -82,3 +82,24 @@ export interface Claim {
     createdAt: Date;
     status: ClaimStatus;
 }
+
+export interface Message {
+    id: string;
+    senderId: string;
+    receiverId: string;
+    itemId?: string;
+    content: string;
+    isRead: boolean;
+    createdAt: Date;
+}
+
+export interface Conversation {
+    userId: string;
+    userName: string;
+    userAvatar: string;
+    itemId?: string;
+    itemTitle?: string;
+    lastMessage: string;
+    lastMessageTime: Date;
+    unreadCount: number;
+}

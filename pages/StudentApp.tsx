@@ -2,11 +2,12 @@ import React, { useState, useMemo, useRef } from 'react';
 import Header from '../components/Header';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
-import { Item, ItemCategory, ItemCondition, LostItem } from '../types';
+import { Item, ItemCategory, ItemCondition, LostItem, User } from '../types';
 import ItemCard from '../components/ItemCard';
 import AnimatedButton from '../components/AnimatedButton';
 import { CameraIcon, PlusIcon, StarIcon, RatingStarIcon } from '../assets/icons';
 import { uploadImageToSupabase } from '../utils/storage';
+import ChatModal from '../components/ChatModal';
 
 
 // Main Student Application Component
@@ -16,32 +17,39 @@ const StudentApp: React.FC = () => {
     const [selectedItem, setSelectedItem] = useState<Item | null>(null);
     const [claimingItem, setClaimingItem] = useState<LostItem | null>(null);
     const [reportingItem, setReportingItem] = useState<Item | null>(null);
+    const [chatUser, setChatUser] = useState<{ user: User; item?: Item } | null>(null);
 
     const handleNavigate = (page: string) => {
         setSelectedItem(null); // Close item detail view on navigation
         setActivePage(page);
     };
+
+    const handleMessage = (seller: User, item?: Item) => {
+        setChatUser({ user: seller, item });
+    };
     
     const renderPage = () => {
         if (selectedItem) {
-            return <ItemDetailPage item={selectedItem} onBack={() => setSelectedItem(null)} onReport={() => setReportingItem(selectedItem)} />;
+            return <ItemDetailPage item={selectedItem} onBack={() => setSelectedItem(null)} onReport={() => setReportingItem(selectedItem)} onMessage={handleMessage} />;
         }
         
         switch (activePage) {
             case 'dashboard':
-                return <DashboardPage searchQuery={searchQuery} onSelectItem={setSelectedItem} />;
+                return <DashboardPage searchQuery={searchQuery} onSelectItem={setSelectedItem} onMessage={handleMessage} />;
             case 'browse':
-                return <BrowsePage searchQuery={searchQuery} onSelectItem={setSelectedItem} />;
+                return <BrowsePage searchQuery={searchQuery} onSelectItem={setSelectedItem} onMessage={handleMessage} />;
             case 'sell':
                 return <SellItemPage onPostSuccess={() => setActivePage('dashboard')} />;
             case 'wishlist':
-                return <WishlistPage searchQuery={searchQuery} onSelectItem={setSelectedItem} />;
+                return <WishlistPage searchQuery={searchQuery} onSelectItem={setSelectedItem} onMessage={handleMessage} />;
+            case 'messages':
+                return <MessagesPage onMessage={handleMessage} />;
             case 'lostfound':
                 return <LostAndFoundPage onClaimItem={setClaimingItem} />;
             case 'profile':
                 return <ProfilePage />;
             default:
-                return <DashboardPage searchQuery={searchQuery} onSelectItem={setSelectedItem} />;
+                return <DashboardPage searchQuery={searchQuery} onSelectItem={setSelectedItem} onMessage={handleMessage} />;
         }
     };
 
@@ -53,12 +61,13 @@ const StudentApp: React.FC = () => {
             </main>
             {claimingItem && <ClaimItemModal item={claimingItem} onClose={() => setClaimingItem(null)} />}
             {reportingItem && <ReportItemModal item={reportingItem} onClose={() => setReportingItem(null)} />}
+            {chatUser && <ChatModal otherUser={chatUser.user} item={chatUser.item} onClose={() => setChatUser(null)} />}
         </div>
     );
 };
 
 // Sub-component: Item Carousel for Mobile Dashboard
-const ItemCarousel: React.FC<{ items: Item[]; onSelectItem: (item: Item) => void }> = ({ items, onSelectItem }) => {
+const ItemCarousel: React.FC<{ items: Item[]; onSelectItem: (item: Item) => void; onMessage: (seller: User, item?: Item) => void }> = ({ items, onSelectItem, onMessage }) => {
     const { users } = useData();
 
     if (items.length === 0) {
@@ -77,7 +86,7 @@ const ItemCarousel: React.FC<{ items: Item[]; onSelectItem: (item: Item) => void
                          <ItemCard
                             item={item}
                             seller={seller}
-                            onMessage={(s) => alert(`Messaging ${s.fullName}`)}
+                            onMessage={(s) => onMessage(s, item)}
                             onCardClick={onSelectItem}
                         />
                     </div>
@@ -88,7 +97,7 @@ const ItemCarousel: React.FC<{ items: Item[]; onSelectItem: (item: Item) => void
 };
 
 // Sub-component: Dashboard Page
-const DashboardPage: React.FC<{ searchQuery: string; onSelectItem: (item: Item) => void }> = ({ searchQuery, onSelectItem }) => {
+const DashboardPage: React.FC<{ searchQuery: string; onSelectItem: (item: Item) => void; onMessage: (seller: User, item?: Item) => void }> = ({ searchQuery, onSelectItem, onMessage }) => {
     const { items, users } = useData();
 
     const filteredItems = useMemo(() => {
@@ -109,7 +118,7 @@ const DashboardPage: React.FC<{ searchQuery: string; onSelectItem: (item: Item) 
             </div>
             
             <div className="md:hidden">
-                <ItemCarousel items={filteredItems} onSelectItem={onSelectItem} />
+                <ItemCarousel items={filteredItems} onSelectItem={onSelectItem} onMessage={onMessage} />
             </div>
 
             <div className="hidden md:block">
@@ -117,7 +126,7 @@ const DashboardPage: React.FC<{ searchQuery: string; onSelectItem: (item: Item) 
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                         {filteredItems.slice(0, 8).map(item => {
                             const seller = users.find(u => u.id === item.sellerId);
-                            return <ItemCard key={item.id} item={item} seller={seller} onMessage={(s) => alert(`Messaging ${s.fullName}`)} onCardClick={onSelectItem} />;
+                            return <ItemCard key={item.id} item={item} seller={seller} onMessage={(s) => onMessage(s, item)} onCardClick={onSelectItem} />;
                         })}
                     </div>
                 ) : (
@@ -129,7 +138,7 @@ const DashboardPage: React.FC<{ searchQuery: string; onSelectItem: (item: Item) 
 };
 
 // Sub-component: Browse Page
-const BrowsePage: React.FC<{ searchQuery: string; onSelectItem: (item: Item) => void }> = ({ searchQuery, onSelectItem }) => {
+const BrowsePage: React.FC<{ searchQuery: string; onSelectItem: (item: Item) => void; onMessage: (seller: User, item?: Item) => void }> = ({ searchQuery, onSelectItem, onMessage }) => {
     const { items, users } = useData();
     const [categoryFilter, setCategoryFilter] = useState<string>('all');
     const [sortBy, setSortBy] = useState<string>('newest');
@@ -187,7 +196,7 @@ const BrowsePage: React.FC<{ searchQuery: string; onSelectItem: (item: Item) => 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {filteredAndSortedItems.map(item => {
                         const seller = users.find(u => u.id === item.sellerId);
-                        return <ItemCard key={item.id} item={item} seller={seller} onMessage={(s) => alert(`Messaging ${s.fullName}`)} onCardClick={onSelectItem} />;
+                        return <ItemCard key={item.id} item={item} seller={seller} onMessage={(s) => onMessage(s, item)} onCardClick={onSelectItem} />;
                     })}
                 </div>
             ) : (
@@ -199,7 +208,7 @@ const BrowsePage: React.FC<{ searchQuery: string; onSelectItem: (item: Item) => 
 
 
 // Sub-component: Wishlist Page
-const WishlistPage: React.FC<{ searchQuery: string; onSelectItem: (item: Item) => void }> = ({ searchQuery, onSelectItem }) => {
+const WishlistPage: React.FC<{ searchQuery: string; onSelectItem: (item: Item) => void; onMessage: (seller: User, item?: Item) => void }> = ({ searchQuery, onSelectItem, onMessage }) => {
     const { items, users } = useData();
     const { user } = useAuth();
     const wishlist = user?.wishlist || [];
@@ -220,7 +229,7 @@ const WishlistPage: React.FC<{ searchQuery: string; onSelectItem: (item: Item) =
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {wishlistedItems.map(item => {
                         const seller = users.find(u => u.id === item.sellerId);
-                        return <ItemCard key={item.id} item={item} seller={seller} onMessage={(s) => alert(`Messaging ${s.fullName}`)} onCardClick={onSelectItem} />;
+                        return <ItemCard key={item.id} item={item} seller={seller} onMessage={(s) => onMessage(s, item)} onCardClick={onSelectItem} />;
                     })}
                 </div>
             ) : (
@@ -230,6 +239,68 @@ const WishlistPage: React.FC<{ searchQuery: string; onSelectItem: (item: Item) =
     );
 };
 
+// Sub-component: Messages Page
+const MessagesPage: React.FC<{ onMessage: (seller: User, item?: Item) => void }> = ({ onMessage }) => {
+    const { getConversations, getUserById, getItemById } = useData();
+    const conversations = getConversations();
+
+    return (
+        <div>
+            <h2 className="text-3xl font-extrabold mb-6 !text-black dark:text-white">Messages</h2>
+            {conversations.length > 0 ? (
+                <div className="space-y-3">
+                    {conversations.map((conv, index) => {
+                        const otherUser = getUserById(conv.userId);
+                        const item = conv.itemId ? getItemById(conv.itemId) : undefined;
+                        if (!otherUser) return null;
+                        
+                        return (
+                            <button
+                                key={`${conv.userId}-${conv.itemId || 'general'}-${index}`}
+                                onClick={() => onMessage(otherUser, item)}
+                                className="w-full bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 flex items-start gap-4 text-left"
+                            >
+                                <img 
+                                    src={conv.userAvatar} 
+                                    alt={conv.userName} 
+                                    className="w-14 h-14 rounded-full flex-shrink-0"
+                                />
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="font-bold text-gray-900 dark:text-white truncate">{conv.userName}</h3>
+                                            {conv.itemTitle && (
+                                                <p className="text-xs text-primary-500 truncate">About: {conv.itemTitle}</p>
+                                            )}
+                                        </div>
+                                        {conv.unreadCount > 0 && (
+                                            <span className="bg-primary-500 text-white text-xs font-bold px-2 py-1 rounded-full flex-shrink-0">
+                                                {conv.unreadCount}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 truncate">{conv.lastMessage}</p>
+                                    <p className="text-xs text-gray-400 mt-1">
+                                        {conv.lastMessageTime.toLocaleString([], { 
+                                            month: 'short', 
+                                            day: 'numeric', 
+                                            hour: '2-digit', 
+                                            minute: '2-digit' 
+                                        })}
+                                    </p>
+                                </div>
+                            </button>
+                        );
+                    })}
+                </div>
+            ) : (
+                <div className="text-center mt-12">
+                    <p className="text-gray-500 dark:text-gray-400">No messages yet. Start a conversation with a seller!</p>
+                </div>
+            )}
+        </div>
+    );
+};
 
 // Sub-component: Sell Item Page
 const SellItemPage: React.FC<{ onPostSuccess: () => void }> = ({ onPostSuccess }) => {
@@ -766,7 +837,7 @@ const ProfilePage: React.FC = () => {
 };
 
 // Sub-component: Item Detail Page
-const ItemDetailPage: React.FC<{ item: Item; onBack: () => void; onReport: () => void; }> = ({ item, onBack, onReport }) => {
+const ItemDetailPage: React.FC<{ item: Item; onBack: () => void; onReport: () => void; onMessage: (seller: User, item?: Item) => void }> = ({ item, onBack, onReport, onMessage }) => {
     const { getUserById } = useData();
     const seller = getUserById(item.sellerId);
 
@@ -806,7 +877,7 @@ const ItemDetailPage: React.FC<{ item: Item; onBack: () => void; onReport: () =>
                         {seller && <RateSeller sellerId={seller.id} />}
                     </div>
 
-                    <AnimatedButton className="w-full mt-8">Message Seller</AnimatedButton>
+                    <AnimatedButton className="w-full mt-8" onClick={() => seller && onMessage(seller, item)}>Message Seller</AnimatedButton>
                      <div className="text-center mt-4">
                         <button onClick={onReport} className="text-sm text-red-500 hover:underline">
                             Report this item

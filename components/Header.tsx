@@ -34,6 +34,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, onSearch, activePage }) => 
         { page: 'browse', label: 'Browse' },
         { page: 'sell', label: 'Sell Item' },
         { page: 'wishlist', label: 'Wishlist' },
+        { page: 'messages', label: 'Messages' },
         { page: 'lostfound', label: 'Lost & Found'},
         { page: 'profile', label: 'Profile' },
     ];

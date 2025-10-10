@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, ReactNode, useCallback, useEffect } from 'react';
-import { User, Item, LostItem, Complaint, Claim, ClaimStatus, ComplaintStatus } from '../types';
+import { User, Item, LostItem, Complaint, Claim, ClaimStatus, ComplaintStatus, Message, Conversation } from '../types';
 import { useAuth } from './AuthContext';
 import { supabase } from '../supabase';
 
@@ -9,6 +9,7 @@ interface DataContextType {
     lostItems: LostItem[];
     complaints: Complaint[];
     claims: Claim[];
+    messages: Message[];
     getUserById: (id: string) => User | undefined;
     getItemById: (id: string) => Item | undefined;
     addItem: (item: Omit<Item, 'id' | 'createdAt' | 'isSold'>) => Promise<void>;
@@ -23,6 +24,10 @@ interface DataContextType {
     submitClaim: (claimData: Omit<Claim, 'id' | 'createdAt' | 'status'>) => Promise<void>;
     resolveComplaint: (complaintId: string, action: 'dismiss' | 'deleteItem') => Promise<void>;
     resolveClaim: (claimId: string, status: ClaimStatus) => Promise<void>;
+    sendMessage: (receiverId: string, content: string, itemId?: string) => Promise<void>;
+    getMessages: (otherUserId: string, itemId?: string) => Message[];
+    getConversations: () => Conversation[];
+    markMessagesAsRead: (otherUserId: string, itemId?: string) => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -34,6 +39,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [lostItems, setLostItems] = useState<LostItem[]>([]);
     const [complaints, setComplaints] = useState<Complaint[]>([]);
     const [claims, setClaims] = useState<Claim[]>([]);
+    const [messages, setMessages] = useState<Message[]>([]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -104,6 +110,25 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 status: c.status,
                 createdAt: new Date(c.created_at)
             })));
+
+            // Fetch messages
+            if (user) {
+                const { data: messagesData } = await supabase
+                    .from('messages')
+                    .select('*')
+                    .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+                    .order('created_at', { ascending: true });
+
+                if (messagesData) setMessages(messagesData.map(m => ({
+                    id: m.id,
+                    senderId: m.sender_id,
+                    receiverId: m.receiver_id,
+                    itemId: m.item_id,
+                    content: m.content,
+                    isRead: m.is_read,
+                    createdAt: new Date(m.created_at)
+                })));
+            }
         };
 
         fetchData();
@@ -133,14 +158,20 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             .on('postgres_changes', { event: '*', schema: 'public', table: 'claims' }, () => fetchData())
             .subscribe();
 
+        const messagesSubscription = supabase
+            .channel('messages_channel')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => fetchData())
+            .subscribe();
+
         return () => {
             usersSubscription.unsubscribe();
             itemsSubscription.unsubscribe();
             lostItemsSubscription.unsubscribe();
             complaintsSubscription.unsubscribe();
             claimsSubscription.unsubscribe();
+            messagesSubscription.unsubscribe();
         };
-    }, []);
+    }, [user]);
 
     const getUserById = useCallback((id: string) => users.find(u => u.id === id), [users]);
     const getItemById = useCallback((id: string) => items.find(i => i.id === id), [items]);
@@ -270,12 +301,102 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
     };
 
+    const sendMessage = async (receiverId: string, content: string, itemId?: string) => {
+        if (!user) return;
+        
+        await supabase.from('messages').insert([{
+            sender_id: user.id,
+            receiver_id: receiverId,
+            item_id: itemId,
+            content,
+            is_read: false,
+            created_at: new Date().toISOString()
+        }]);
+    };
+
+    const getMessages = useCallback((otherUserId: string, itemId?: string): Message[] => {
+        if (!user) return [];
+        
+        return messages.filter(m => {
+            const isConversationMatch = (m.senderId === user.id && m.receiverId === otherUserId) ||
+                                       (m.senderId === otherUserId && m.receiverId === user.id);
+            const isItemMatch = itemId ? m.itemId === itemId : true;
+            return isConversationMatch && isItemMatch;
+        }).sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+    }, [user, messages]);
+
+    const getConversations = useCallback((): Conversation[] => {
+        if (!user) return [];
+        
+        const conversationMap = new Map<string, Conversation>();
+        
+        messages.forEach(message => {
+            const isUserSender = message.senderId === user.id;
+            const otherUserId = isUserSender ? message.receiverId : message.senderId;
+            const otherUser = getUserById(otherUserId);
+            
+            if (!otherUser) return;
+            
+            const key = `${otherUserId}-${message.itemId || 'general'}`;
+            const existing = conversationMap.get(key);
+            
+            const unreadCount = !message.isRead && message.receiverId === user.id ? 1 : 0;
+            
+            if (!existing || existing.lastMessageTime < message.createdAt) {
+                const item = message.itemId ? getItemById(message.itemId) : undefined;
+                conversationMap.set(key, {
+                    userId: otherUserId,
+                    userName: otherUser.fullName,
+                    userAvatar: otherUser.profilePictureUrl,
+                    itemId: message.itemId,
+                    itemTitle: item?.title,
+                    lastMessage: message.content,
+                    lastMessageTime: message.createdAt,
+                    unreadCount: (existing?.unreadCount || 0) + unreadCount
+                });
+            } else if (existing) {
+                existing.unreadCount += unreadCount;
+            }
+        });
+        
+        return Array.from(conversationMap.values()).sort((a, b) => 
+            b.lastMessageTime.getTime() - a.lastMessageTime.getTime()
+        );
+    }, [user, messages, getUserById, getItemById]);
+
+    const markMessagesAsRead = async (otherUserId: string, itemId?: string) => {
+        if (!user) return;
+        
+        const unreadMessages = messages.filter(m => {
+            const isFromOtherUser = m.senderId === otherUserId && m.receiverId === user.id && !m.isRead;
+            const isInConversation = itemId != null ? m.itemId === itemId : m.itemId == null;
+            return isFromOtherUser && isInConversation;
+        });
+        
+        if (unreadMessages.length === 0) return;
+        
+        // Update in database
+        for (const message of unreadMessages) {
+            await supabase.from('messages').update({ is_read: true }).eq('id', message.id);
+        }
+        
+        // Update local state immediately
+        setMessages(prevMessages => 
+            prevMessages.map(m => 
+                unreadMessages.find(um => um.id === m.id) 
+                    ? { ...m, isRead: true } 
+                    : m
+            )
+        );
+    };
+
     const value = {
         users,
         items,
         lostItems,
         complaints,
         claims,
+        messages,
         getUserById,
         getItemById,
         addItem,
@@ -290,6 +411,10 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         submitClaim,
         resolveComplaint,
         resolveClaim,
+        sendMessage,
+        getMessages,
+        getConversations,
+        markMessagesAsRead,
     };
 
     return (

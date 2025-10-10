@@ -152,12 +152,36 @@ const LostAndFoundPage: React.FC = () => {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [locationFound, setLocationFound] = useState('');
+    const [itemImage, setItemImage] = useState<File | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const pendingClaims = claims.filter(c => c.status === 'pending');
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        addLostItem({ name, description, locationFound, imageUrl: `https://picsum.photos/seed/lost${name.replace(/\s/g, '')}/400/300` });
-        setName(''); setDescription(''); setLocationFound('');
+        if (!itemImage) {
+            alert('Please upload an image of the found item.');
+            return;
+        }
+        
+        setIsSubmitting(true);
+        try {
+            const { uploadImageToSupabase } = await import('../utils/storage');
+            const imageUrl = await uploadImageToSupabase(itemImage, 'items', `lost-found/${Date.now()}`);
+            
+            await addLostItem({ name, description, locationFound, imageUrl });
+            
+            setName(''); 
+            setDescription(''); 
+            setLocationFound('');
+            setItemImage(null);
+            
+            alert('Found item posted successfully!');
+        } catch (error) {
+            console.error('Failed to post found item:', error);
+            alert('Failed to post item. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -202,7 +226,28 @@ const LostAndFoundPage: React.FC = () => {
                      <input type="text" placeholder="Item Name" value={name} onChange={e => setName(e.target.value)} required className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
                      <textarea placeholder="Description" value={description} onChange={e => setDescription(e.target.value)} required rows={3} className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"></textarea>
                      <input type="text" placeholder="Location Found" value={locationFound} onChange={e => setLocationFound(e.target.value)} required className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
-                     <AnimatedButton type="submit" className="w-full">Post Item</AnimatedButton>
+                     
+                     <div>
+                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                             Upload Image of Found Item *
+                         </label>
+                         <input 
+                             type="file" 
+                             accept="image/*" 
+                             onChange={(e) => {
+                                 if (e.target.files && e.target.files[0]) {
+                                     setItemImage(e.target.files[0]);
+                                 }
+                             }} 
+                             required 
+                             className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100" 
+                         />
+                         {itemImage && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Selected: {itemImage.name}</p>}
+                     </div>
+                     
+                     <AnimatedButton type="submit" className="w-full" disabled={isSubmitting}>
+                         {isSubmitting ? 'Uploading...' : 'Post Item'}
+                     </AnimatedButton>
                  </form>
             </div>
         </div>
