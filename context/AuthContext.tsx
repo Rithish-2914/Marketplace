@@ -45,27 +45,59 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     .single();
 
                 if (data && !error) {
-                    setUser(data as User);
+                    // Convert from snake_case to camelCase
+                    const user: User = {
+                        id: data.id,
+                        fullName: data.full_name,
+                        email: data.email,
+                        regNo: data.reg_no,
+                        branch: data.branch,
+                        year: data.year,
+                        hostelBlock: data.hostel_block,
+                        role: data.role,
+                        profilePictureUrl: data.profile_picture_url,
+                        rating: data.rating,
+                        ratingsCount: data.ratings_count,
+                        wishlist: data.wishlist,
+                        isSuspended: data.is_suspended,
+                    };
+                    setUser(user);
                 } else {
                     console.warn("User exists in Auth but not in Supabase database. Creating user record...");
                     
-                    const newUser: User = {
+                    // Convert to snake_case for database
+                    const newUserData = {
                         id: firebaseUser.uid,
-                        fullName: firebaseUser.displayName || 'VIT Student',
+                        full_name: firebaseUser.displayName || 'VIT Student',
                         email: firebaseUser.email || '',
-                        regNo: 'UPDATE_ME',
+                        reg_no: 'UPDATE_ME',
                         branch: 'UPDATE_ME',
                         year: 1,
-                        hostelBlock: 'UPDATE_ME',
+                        hostel_block: 'UPDATE_ME',
                         role: firebaseUser.email?.endsWith('@vit.ac.in') ? Role.ADMIN : Role.STUDENT,
-                        profilePictureUrl: firebaseUser.photoURL || getDefaultProfilePicture(firebaseUser.displayName || 'User'),
+                        profile_picture_url: firebaseUser.photoURL || getDefaultProfilePicture(firebaseUser.displayName || 'User'),
                         rating: 0,
-                        ratingsCount: 0,
+                        ratings_count: 0,
                         wishlist: [],
-                        isSuspended: false,
+                        is_suspended: false,
                     };
                     
-                    const { error: insertError } = await supabase.from('users').insert([newUser]);
+                    const { error: insertError, data } = await supabase.from('users').insert([newUserData]).select().single();
+                    const newUser: User = data ? {
+                        id: data.id,
+                        fullName: data.full_name,
+                        email: data.email,
+                        regNo: data.reg_no,
+                        branch: data.branch,
+                        year: data.year,
+                        hostelBlock: data.hostel_block,
+                        role: data.role,
+                        profilePictureUrl: data.profile_picture_url,
+                        rating: data.rating,
+                        ratingsCount: data.ratings_count,
+                        wishlist: data.wishlist,
+                        isSuspended: data.is_suspended,
+                    } : null as any;
                     if (!insertError) {
                         setUser(newUser);
                         console.log("User record created successfully!");
@@ -105,23 +137,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             
             await sendEmailVerification(firebaseUser);
             
-            const newUser: User = {
+            // Convert to snake_case for database
+            const newUserData = {
                 id: firebaseUser.uid,
-                fullName: userData.fullName,
+                full_name: userData.fullName,
                 email: userData.email,
-                regNo: userData.regNo,
+                reg_no: userData.regNo,
                 branch: userData.branch,
                 year: userData.year,
-                hostelBlock: userData.hostelBlock,
+                hostel_block: userData.hostelBlock,
                 role: userData.email.endsWith('@vit.ac.in') ? Role.ADMIN : Role.STUDENT,
-                profilePictureUrl: firebaseUser.photoURL || getDefaultProfilePicture(userData.fullName),
+                profile_picture_url: firebaseUser.photoURL || getDefaultProfilePicture(userData.fullName),
                 rating: 0,
-                ratingsCount: 0,
+                ratings_count: 0,
                 wishlist: [],
-                isSuspended: false,
+                is_suspended: false,
             };
             
-            const { error } = await supabase.from('users').insert([newUser]);
+            const { error } = await supabase.from('users').insert([newUserData]);
             if (error) throw error;
             
             alert('Account created! Please check your email to verify your account before logging in.');
@@ -154,22 +187,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
             if (!existingUser) {
                 console.log('Creating new user in Supabase...');
-                const newUser: User = {
+                // Convert camelCase to snake_case for database
+                const newUserData = {
                     id: firebaseUser.uid,
-                    fullName: firebaseUser.displayName || 'VIT Student',
+                    full_name: firebaseUser.displayName || 'VIT Student',
                     email: firebaseUser.email || '',
-                    regNo: 'TBD',
+                    reg_no: 'TBD',
                     branch: 'TBD',
                     year: 1,
-                    hostelBlock: 'TBD',
+                    hostel_block: 'TBD',
                     role: firebaseUser.email?.endsWith('@vit.ac.in') ? Role.ADMIN : Role.STUDENT,
-                    profilePictureUrl: firebaseUser.photoURL || getDefaultProfilePicture(firebaseUser.displayName || 'User'),
+                    profile_picture_url: firebaseUser.photoURL || getDefaultProfilePicture(firebaseUser.displayName || 'User'),
                     rating: 0,
-                    ratingsCount: 0,
+                    ratings_count: 0,
                     wishlist: [],
-                    isSuspended: false,
+                    is_suspended: false,
                 };
-                const { error: insertError } = await supabase.from('users').insert([newUser]);
+                const { error: insertError } = await supabase.from('users').insert([newUserData]);
                 if (insertError) {
                     console.error('Error creating user:', insertError);
                     alert(`Failed to create user: ${insertError.message}`);
@@ -201,7 +235,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 .single();
 
             if (data && !error) {
-                setUser(data as User);
+                // Convert from snake_case to camelCase
+                const user: User = {
+                    id: data.id,
+                    fullName: data.full_name,
+                    email: data.email,
+                    regNo: data.reg_no,
+                    branch: data.branch,
+                    year: data.year,
+                    hostelBlock: data.hostel_block,
+                    role: data.role,
+                    profilePictureUrl: data.profile_picture_url,
+                    rating: data.rating,
+                    ratingsCount: data.ratings_count,
+                    wishlist: data.wishlist,
+                    isSuspended: data.is_suspended,
+                };
+                setUser(user);
             }
         }
     };
