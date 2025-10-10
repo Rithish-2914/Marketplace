@@ -251,10 +251,15 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const currentTotalRating = seller.rating * seller.ratingsCount;
         const newRatingsCount = seller.ratingsCount + 1;
         const newAverageRating = (currentTotalRating + rating) / newRatingsCount;
-        await supabase.from('users').update({
+        
+        const { error } = await supabase.from('users').update({
             rating: parseFloat(newAverageRating.toFixed(1)),
-            ratingsCount: newRatingsCount,
+            ratings_count: newRatingsCount,
         }).eq('id', sellerId);
+        
+        if (error) {
+            console.error('Error updating rating:', error);
+        }
     };
 
     const reportItem = async (itemId: string, reporterId: string, reason: string) => {
