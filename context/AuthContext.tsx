@@ -25,6 +25,12 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Helper function to generate default profile picture with first letter
+const getDefaultProfilePicture = (name: string): string => {
+    const firstLetter = name.trim().charAt(0).toUpperCase() || 'U';
+    return `https://ui-avatars.com/api/?name=${firstLetter}&background=1a1a1a&color=ffffff&size=200&bold=true`;
+};
+
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
@@ -52,7 +58,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                         year: 1,
                         hostelBlock: 'UPDATE_ME',
                         role: firebaseUser.email?.endsWith('@vit.ac.in') ? Role.ADMIN : Role.STUDENT,
-                        profilePictureUrl: firebaseUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(firebaseUser.displayName || 'User')}&background=random&size=200`,
+                        profilePictureUrl: firebaseUser.photoURL || getDefaultProfilePicture(firebaseUser.displayName || 'User'),
                         rating: 0,
                         ratingsCount: 0,
                         wishlist: [],
@@ -108,7 +114,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 year: userData.year,
                 hostelBlock: userData.hostelBlock,
                 role: userData.email.endsWith('@vit.ac.in') ? Role.ADMIN : Role.STUDENT,
-                profilePictureUrl: firebaseUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.fullName)}&background=random&size=200`,
+                profilePictureUrl: firebaseUser.photoURL || getDefaultProfilePicture(userData.fullName),
                 rating: 0,
                 ratingsCount: 0,
                 wishlist: [],
@@ -149,7 +155,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     year: 1,
                     hostelBlock: 'TBD',
                     role: firebaseUser.email?.endsWith('@vit.ac.in') ? Role.ADMIN : Role.STUDENT,
-                    profilePictureUrl: firebaseUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(firebaseUser.displayName || 'User')}&background=random&size=200`,
+                    profilePictureUrl: firebaseUser.photoURL || getDefaultProfilePicture(firebaseUser.displayName || 'User'),
                     rating: 0,
                     ratingsCount: 0,
                     wishlist: [],
