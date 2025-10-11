@@ -10,6 +10,7 @@ import {
     GoogleAuthProvider,
     signInWithPopup,
     sendEmailVerification,
+    sendPasswordResetEmail,
     User as FirebaseUser
 } from 'firebase/auth';
 
@@ -21,6 +22,7 @@ interface AuthContextType {
     logout: () => void;
     googleLogin: () => Promise<boolean>;
     refreshUser: () => Promise<void>;
+    resetPassword: (email: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -477,11 +479,21 @@ useEffect(() => {
 
     };
 
+    const resetPassword = async (email: string): Promise<boolean> => {
+        try {
+            await sendPasswordResetEmail(auth, email);
+            return true;
+        } catch (error) {
+            console.error("Password reset failed:", error);
+            return false;
+        }
+    };
+
 
 
     return (
 
-        <AuthContext.Provider value={{ user, loading, login, signup, logout, googleLogin, refreshUser }}>
+        <AuthContext.Provider value={{ user, loading, login, signup, logout, googleLogin, refreshUser, resetPassword }}>
 
             {children}
 
