@@ -14,6 +14,7 @@ interface DataContextType {
     getItemById: (id: string) => Item | undefined;
     addItem: (item: Omit<Item, 'id' | 'createdAt' | 'isSold'>) => Promise<void>;
     removeItem: (id: string) => Promise<void>;
+    markItemAsSold: (id: string) => Promise<void>;
     toggleSuspendUser: (id: string) => Promise<void>;
     addLostItem: (item: Omit<LostItem, 'id' | 'dateFound'>) => Promise<void>;
     toggleWishlist: (id: string) => void;
@@ -196,6 +197,10 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
     const removeItem = async (id: string) => {
         await supabase.from('items').delete().eq('id', id);
+    };
+
+    const markItemAsSold = async (id: string) => {
+        await supabase.from('items').update({ is_sold: true }).eq('id', id);
     };
 
     const toggleSuspendUser = async (id: string) => {
@@ -400,6 +405,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         getItemById,
         addItem,
         removeItem,
+        markItemAsSold,
         toggleSuspendUser,
         addLostItem,
         toggleWishlist,

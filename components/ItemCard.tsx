@@ -11,7 +11,7 @@ interface ItemCardProps {
 }
 
 const ItemCard: React.FC<ItemCardProps> = ({ item, seller, onMessage, onCardClick }) => {
-    const { toggleWishlist, isInWishlist, removeItem } = useData();
+    const { toggleWishlist, isInWishlist, removeItem, markItemAsSold } = useData();
     const { user } = useAuth();
     const isWishlisted = isInWishlist(item.id);
     const isOwnItem = user?.id === item.sellerId;
@@ -39,8 +39,13 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, seller, onMessage, onCardClic
 
     const handleMarkAsSold = async (e: React.MouseEvent) => {
         e.stopPropagation();
-        // Will implement this
-        alert('Mark as sold feature coming soon!');
+        if (item.isSold) {
+            alert('This item is already marked as sold.');
+            return;
+        }
+        if (window.confirm('Are you sure you want to mark this item as sold?')) {
+            await markItemAsSold(item.id);
+        }
     };
 
     return (
