@@ -33,11 +33,11 @@ const AdminDashboard: React.FC<{ onNavigate: (page: string) => void }> = ({ onNa
             {/* Quick access buttons */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                  <button onClick={() => onNavigate('complaints')} className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                    <h3 className="font-bold text-lg">Review Complaints</h3>
+                    <h3 className="font-bold text-lg text-gray-900 dark:text-white">Review Complaints</h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Action required on {pendingComplaints} item reports.</p>
                 </button>
                  <button onClick={() => onNavigate('lostfound')} className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                    <h3 className="font-bold text-lg">Review Claims</h3>
+                    <h3 className="font-bold text-lg text-gray-900 dark:text-white">Review Claims</h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400">{pendingClaims} lost items are waiting for claim approval.</p>
                 </button>
             </div>
@@ -192,7 +192,7 @@ const LostAndFoundPage: React.FC = () => {
                  
                  {approvedClaims.length > 0 && (
                     <div className="mb-8">
-                        <h3 className="text-lg font-bold text-green-600 dark:text-green-400 mb-3">✓ Approved Claims</h3>
+                        <h3 className="text-lg font-bold text-black dark:text-white mb-3">✓ Approved Claims</h3>
                         <div className="space-y-2">
                             {approvedClaims.map(claim => {
                                 const item = lostItems.find(li => li.id === claim.lostItemId);
@@ -200,7 +200,7 @@ const LostAndFoundPage: React.FC = () => {
                                 if (!item || !claimant) return null;
                                 return (
                                     <div key={claim.id} className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-700">
-                                        <p className="text-sm font-semibold text-green-800 dark:text-green-300">
+                                        <p className="text-sm font-semibold text-black dark:text-white">
                                             {claimant.fullName} ({claimant.regNo}) - Approved for: {item.name}
                                         </p>
                                     </div>

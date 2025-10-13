@@ -16,7 +16,17 @@ This project has been fully migrated to use Supabase for database and storage wh
 
 ## Recent Changes
 
-### Authentication Security & UX Improvements (October 13, 2025 - Latest)
+### Profile & Admin Dashboard Fixes (October 13, 2025 - Latest)
+- ✅ **Profile Update Bug Fix**: Fixed Registration Number not saving
+  - Added missing `regNo` field to `updateUser` function in DataContext
+  - Profile edits now properly save all fields including registration number
+  - Fixed snake_case conversion for reg_no database field
+- ✅ **Admin Dashboard Color Scheme**: Improved text visibility and contrast
+  - Changed "Review Complaints" and "Review Claims" button text to proper contrast colors
+  - Updated approved claims section from green text to black/white for better readability
+  - All text now properly visible in both light and dark modes
+
+### Authentication Security & UX Improvements (October 13, 2025)
 - ✅ **Enhanced Email Domain Restrictions**: Strengthened security for VIT-only access
   - Google Sign-In now restricted to @vitstudent.ac.in and @vit.ac.in domains only
   - Non-VIT Google accounts are immediately rejected with clear error message
