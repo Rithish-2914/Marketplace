@@ -205,7 +205,7 @@ useEffect(() => {
 
             if (!userCredential.user.emailVerified) {
 
-                alert('Please verify your email before logging in. Check your inbox for the verification link.');
+                alert('Email Verification Required!\n\nPlease verify your email before logging in. Check your inbox (and spam folder) for the verification link from Firebase.\n\nAfter clicking the verification link, come back and try logging in again.');
 
                 await signOut(auth);
 
@@ -283,7 +283,7 @@ useEffect(() => {
 
             
 
-            alert('Account created! Please check your email to verify your account before logging in.');
+            alert('Account Created Successfully! ✅\n\nA verification email has been sent to ' + userData.email + '.\n\nPlease check your inbox (and spam folder) and click the verification link.\n\nAfter verifying your email, you can log in to your account.');
 
             await signOut(auth);
 
