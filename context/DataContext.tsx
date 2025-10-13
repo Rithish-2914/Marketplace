@@ -238,10 +238,11 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return user?.wishlist?.includes(id) ?? false;
     }, [user]);
 
-    const updateUser = async (userId: string, updatedData: Partial<Pick<User, 'fullName' | 'branch' | 'year' | 'hostelBlock' | 'profilePictureUrl'>>) => {
+    const updateUser = async (userId: string, updatedData: Partial<Pick<User, 'fullName' | 'regNo' | 'branch' | 'year' | 'hostelBlock' | 'profilePictureUrl'>>) => {
         // Convert camelCase to snake_case for Supabase
         const dbData: any = {};
         if (updatedData.fullName !== undefined) dbData.full_name = updatedData.fullName;
+        if (updatedData.regNo !== undefined) dbData.reg_no = updatedData.regNo;
         if (updatedData.branch !== undefined) dbData.branch = updatedData.branch;
         if (updatedData.year !== undefined) dbData.year = updatedData.year;
         if (updatedData.hostelBlock !== undefined) dbData.hostel_block = updatedData.hostelBlock;
