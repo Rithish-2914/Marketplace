@@ -16,7 +16,21 @@ This project has been fully migrated to use Supabase for database and storage wh
 
 ## Recent Changes
 
-### In-App Messaging System (October 10, 2025 - Latest)
+### Authentication Security & UX Improvements (October 13, 2025 - Latest)
+- ✅ **Enhanced Email Domain Restrictions**: Strengthened security for VIT-only access
+  - Google Sign-In now restricted to @vitstudent.ac.in and @vit.ac.in domains only
+  - Non-VIT Google accounts are immediately rejected with clear error message
+  - Email/password signup already enforced VIT domain validation
+- ✅ **Profile Completion Prompts**: Better UX for incomplete Google sign-up profiles
+  - Added warning banner for users with incomplete profile details (TBD/UPDATE_ME values)
+  - Prompts users to complete registration number, branch, and hostel information
+  - Seamless profile editing flow from notification
+- ✅ **Improved Email Verification Messaging**: Clearer guidance for new users
+  - Enhanced signup success message with step-by-step verification instructions
+  - Better login error messages for unverified accounts with spam folder reminder
+  - Users are reminded to check verification email before attempting login
+
+### In-App Messaging System (October 10, 2025)
 - ✅ **Complete Messaging Implementation**: Users can now message each other about items
   - Created `messages` table with sender, receiver, item, content, timestamp, and read status
   - Implemented real-time message subscriptions for instant updates
