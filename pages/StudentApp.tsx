@@ -655,6 +655,7 @@ const ProfilePage: React.FC = () => {
     const [isUploadingPicture, setIsUploadingPicture] = useState(false);
     
     const [fullName, setFullName] = useState(user?.fullName || '');
+    const [regNo, setRegNo] = useState(user?.regNo || '');
     const [branch, setBranch] = useState(user?.branch || '');
     const [year, setYear] = useState(user?.year || 1);
     const [hostelBlock, setHostelBlock] = useState(user?.hostelBlock || '');
@@ -708,7 +709,7 @@ const ProfilePage: React.FC = () => {
     };
 
     const handleSave = async () => {
-        await updateUser(user.id, { fullName, branch, year, hostelBlock });
+        await updateUser(user.id, { fullName, regNo, branch, year, hostelBlock });
         await refreshUser();
         setIsEditing(false);
         alert('Profile updated successfully!');
@@ -791,8 +792,12 @@ const ProfilePage: React.FC = () => {
                                 <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} className="mt-1 w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
                             </div>
                             <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Registration Number</label>
+                                <input type="text" value={regNo} onChange={e => setRegNo(e.target.value)} placeholder="e.g., 21BCE1234" className="mt-1 w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                            </div>
+                            <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Branch</label>
-                                <input type="text" value={branch} onChange={e => setBranch(e.target.value)} className="mt-1 w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                                <input type="text" value={branch} onChange={e => setBranch(e.target.value)} placeholder="e.g., CSE" className="mt-1 w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
                             </div>
                              <div className="grid grid-cols-2 gap-4">
                                 <div>
