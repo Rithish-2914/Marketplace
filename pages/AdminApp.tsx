@@ -192,7 +192,7 @@ const LostAndFoundPage: React.FC = () => {
                  
                  {approvedClaims.length > 0 && (
                     <div className="mb-8">
-                        <h3 className="text-lg font-extrabold mb-6 !text-black dark:text-white">✓ Approved Claims</h3>
+                        <h3 className="text-lg font-extrabold mb-6 text-black dark:text-black">✓ Approved Claims</h3>
                         <div className="space-y-2">
                             {approvedClaims.map(claim => {
                                 const item = lostItems.find(li => li.id === claim.lostItemId);
@@ -200,7 +200,7 @@ const LostAndFoundPage: React.FC = () => {
                                 if (!item || !claimant) return null;
                                 return (
                                     <div key={claim.id} className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-700">
-                                        <p className="text-sm font-semibold text-black dark:text-white">
+                                        <p className="text-sm font-semibold text-black dark:text-black">
                                             {claimant.fullName} ({claimant.regNo}) - Approved for: {item.name}
                                         </p>
                                     </div>
