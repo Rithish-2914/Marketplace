@@ -315,6 +315,20 @@ useEffect(() => {
 
             console.log('Firebase auth successful:', firebaseUser.email);
 
+            
+
+            // Check if email is from VIT domain
+
+            if (!firebaseUser.email?.endsWith('@vitstudent.ac.in') && !firebaseUser.email?.endsWith('@vit.ac.in')) {
+
+                alert('Only VIT email addresses (@vitstudent.ac.in or @vit.ac.in) are allowed to sign in.');
+
+                await signOut(auth);
+
+                return false;
+
+            }
+
 
 
             console.log('Checking if user exists in Supabase...');
