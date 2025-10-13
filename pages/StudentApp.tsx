@@ -769,6 +769,15 @@ const ProfilePage: React.FC = () => {
                         <>
                             <h3 className="text-2xl font-bold mt-4">{user.fullName}</h3>
                             <p className="text-gray-500 dark:text-gray-400">{user.email}</p>
+                            
+                            {(user.regNo === 'TBD' || user.regNo === 'UPDATE_ME' || user.branch === 'TBD' || user.branch === 'UPDATE_ME' || user.hostelBlock === 'TBD' || user.hostelBlock === 'UPDATE_ME') && (
+                                <div className="mt-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-3">
+                                    <p className="text-sm text-yellow-800 dark:text-yellow-200 font-semibold">
+                                        ⚠️ Please complete your profile by clicking "Edit Profile" and updating your details.
+                                    </p>
+                                </div>
+                            )}
+                            
                             <div className="mt-4 text-sm text-gray-600 dark:text-gray-300 space-y-1">
                                 <p><span className="font-semibold">Reg No:</span> {user.regNo}</p>
                                 <p><span className="font-semibold">Branch:</span> {user.branch} ({user.year}{['st', 'nd', 'rd', 'th'][user.year - 1] || 'th'} Year)</p>
