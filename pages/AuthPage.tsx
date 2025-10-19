@@ -29,14 +29,9 @@ const AuthPage: React.FC = () => {
         if (isLogin) {
             const success = await login(email, password);
             if (!success) {
-                setError('Invalid credentials or not a valid VIT email.');
+                setError('Invalid credentials. Please check your email and password.');
             }
         } else {
-            if (!email.endsWith('@vitstudent.ac.in') && !email.endsWith('@vit.ac.in')) {
-                setError('Sign up requires a valid VIT email (@vitstudent.ac.in or @vit.ac.in).');
-                setIsLoading(false);
-                return;
-            }
             if (password !== confirmPassword) {
                 setError('Passwords do not match.');
                 setIsLoading(false);
@@ -111,7 +106,7 @@ const AuthPage: React.FC = () => {
             <div className="w-full max-w-md">
                 <div className="text-center mb-10 animate-fade-in-down">
                     <h1 className="text-6xl sm:text-7xl font-black text-black tracking-tight">SwapHands</h1>
-                    <p className="text-gray-700 mt-3 text-lg font-semibold">The official marketplace for VIT students.</p>
+                    <p className="text-gray-700 mt-3 text-lg font-semibold">Your trusted student marketplace.</p>
                 </div>
                 
                 <div className="bg-white rounded-3xl shadow-2xl p-10 animate-fade-in-down border-2 border-cream-200">
@@ -164,7 +159,7 @@ const AuthPage: React.FC = () => {
 
                             </>
                         )}
-                        <input type="email" placeholder="VIT Email Address" value={email} onChange={e => setEmail(e.target.value)} required className="w-full px-5 py-4 bg-cream-50 text-black font-semibold rounded-2xl focus:outline-none focus:ring-4 focus:ring-black/10 border border-cream-300 placeholder-gray-500" />
+                        <input type="email" placeholder="Email Address" value={email} onChange={e => setEmail(e.target.value)} required className="w-full px-5 py-4 bg-cream-50 text-black font-semibold rounded-2xl focus:outline-none focus:ring-4 focus:ring-black/10 border border-cream-300 placeholder-gray-500" />
                         <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required className="w-full px-5 py-4 bg-cream-50 text-black font-semibold rounded-2xl focus:outline-none focus:ring-4 focus:ring-black/10 border border-cream-300 placeholder-gray-500" />
                         {!isLogin && (
                             <input type="password" placeholder="Confirm Password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required className="w-full px-5 py-4 bg-cream-50 text-black font-semibold rounded-2xl focus:outline-none focus:ring-4 focus:ring-black/10 border border-cream-300 placeholder-gray-500" />
