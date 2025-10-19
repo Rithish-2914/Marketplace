@@ -507,33 +507,137 @@ const SellItemPage: React.FC<{ onPostSuccess: () => void }> = ({ onPostSuccess }
 
 // Sub-component: Lost and Found Page
 const LostAndFoundPage: React.FC<{ onClaimItem: (item: LostItem) => void }> = ({ onClaimItem }) => {
-    const { lostItems } = useData();
+    const { lostItems, addLostItem } = useData();
+    const [name, setName] = useState('');
+    const [description, setDescription] = useState('');
+    const [locationFound, setLocationFound] = useState('');
+    const [itemImage, setItemImage] = useState<File | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!itemImage) {
+            alert('Please upload an image of the found item.');
+            return;
+        }
+        
+        setIsSubmitting(true);
+        try {
+            const imageUrl = await uploadImageToSupabase(itemImage, 'items', `lost-found/${Date.now()}`);
+            
+            await addLostItem({ name, description, locationFound, imageUrl });
+            
+            setName(''); 
+            setDescription(''); 
+            setLocationFound('');
+            setItemImage(null);
+            
+            alert('Found item posted successfully!');
+        } catch (error) {
+            console.error('Failed to post found item:', error);
+            alert('Failed to post item. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            setItemImage(e.target.files[0]);
+        }
+    };
+
     return (
-        <div>
-            <div className="mb-6">
-                <h2 className="text-3xl font-extrabold !text-black dark:text-white">Lost & Found</h2>
-                <p className="text-gray-500 dark:text-gray-400 mt-1">Found something? Please report it to the admin. See an item you lost? You can claim it here.</p>
-                <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded-r-lg">
+        <div className="space-y-8">
+            <div>
+                <h2 className="text-3xl font-extrabold !text-black dark:text-white mb-2">Lost & Found</h2>
+                <p className="text-gray-500 dark:text-gray-400">Found something? Post it here! Lost something? Claim it if you see it.</p>
+            </div>
+
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+                <h3 className="text-2xl font-bold !text-black dark:text-white mb-4">Post a Found Item</h3>
+                <form onSubmit={handleSubmit} className="space-y-4 max-w-2xl">
+                    <div>
+                        <label htmlFor="item-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Item Name</label>
+                        <input 
+                            id="item-name"
+                            type="text" 
+                            placeholder="e.g., iPhone 13, Blue Notebook" 
+                            value={name} 
+                            onChange={e => setName(e.target.value)} 
+                            required 
+                            className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" 
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="item-description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+                        <textarea 
+                            id="item-description"
+                            placeholder="Describe the item in detail..." 
+                            value={description} 
+                            onChange={e => setDescription(e.target.value)} 
+                            required 
+                            rows={3} 
+                            className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        ></textarea>
+                    </div>
+                    <div>
+                        <label htmlFor="location" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Location Found</label>
+                        <input 
+                            id="location"
+                            type="text" 
+                            placeholder="e.g., Library, Hostel Block A" 
+                            value={locationFound} 
+                            onChange={e => setLocationFound(e.target.value)} 
+                            required 
+                            className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" 
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="item-image" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Upload Image</label>
+                        <input 
+                            id="item-image"
+                            type="file" 
+                            accept="image/*" 
+                            onChange={handleImageSelect} 
+                            required 
+                            className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-100 dark:file:bg-primary-900 file:text-primary-700 dark:file:text-primary-300 hover:file:bg-primary-200 dark:hover:file:bg-primary-800" 
+                        />
+                        {itemImage && <p className="text-sm text-green-600 dark:text-green-400 mt-2">✓ {itemImage.name}</p>}
+                    </div>
+                    <AnimatedButton type="submit" className="w-full" disabled={isSubmitting}>
+                        {isSubmitting ? 'Posting...' : 'Post Found Item'}
+                    </AnimatedButton>
+                </form>
+            </div>
+
+            <div>
+                <h3 className="text-2xl font-bold !text-black dark:text-white mb-4">Claim Lost Items</h3>
+                <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded-r-lg mb-6">
                     <p className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-2">AFTER CLAIMING, SUBMIT THE REQUIRED PROOFS:</p>
                     <p className="text-sm text-blue-700 dark:text-blue-400">Submit proofs like bill receipt. In case of unavailability of the receipt, please write the model ID and submit.</p>
                     <p className="text-sm text-blue-700 dark:text-blue-400 mt-1 font-medium">Once submitted, you will be updated after approval.</p>
                 </div>
+                <div className="space-y-4">
+                    {lostItems.length > 0 ? (
+                        lostItems.map(item => (
+                            <div key={item.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 flex items-start sm:items-center space-x-4 flex-col sm:flex-row">
+                                <img src={item.imageUrl} alt={item.name} className="w-full sm:w-32 h-32 object-cover rounded-md mb-4 sm:mb-0" />
+                                <div className="flex-grow">
+                                    <h4 className="font-bold text-lg">{item.name}</h4>
+                                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{item.description}</p>
+                                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">Found at: <span className="font-medium">{item.locationFound}</span> on {item.dateFound?.toLocaleDateString()}</p>
+                                </div>
+                                <button onClick={() => onClaimItem(item)} disabled={!!item.claimedBy} className="mt-4 sm:mt-0 w-full sm:w-auto text-sm py-2 px-4 font-bold text-white bg-green-500 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-4 focus:ring-green-300 transition-all duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                                    {item.claimedBy ? 'Claimed' : 'Claim'}
+                                </button>
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-center text-gray-500 dark:text-gray-400 py-8">No lost items currently listed.</p>
+                    )}
+                </div>
             </div>
-            <div className="space-y-4">
-                 {lostItems.map(item => (
-                     <div key={item.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 flex items-start sm:items-center space-x-4 flex-col sm:flex-row">
-                         <img src={item.imageUrl} alt={item.name} className="w-full sm:w-32 h-32 object-cover rounded-md mb-4 sm:mb-0" />
-                         <div className="flex-grow">
-                             <h4 className="font-bold text-lg">{item.name}</h4>
-                             <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{item.description}</p>
-                             <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">Found at: <span className="font-medium">{item.locationFound}</span> on {item.dateFound?.toLocaleDateString()}</p>
-                         </div>
-                         <button onClick={() => onClaimItem(item)} disabled={!!item.claimedBy} className="mt-4 sm:mt-0 w-full sm:w-auto text-sm py-2 px-4 font-bold text-white bg-green-500 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-4 focus:ring-green-300 transition-all duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed">
-                           {item.claimedBy ? 'Claimed' : 'Claim'}
-                         </button>
-                     </div>
-                 ))}
-             </div>
         </div>
     );
 };
