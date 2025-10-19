@@ -8,6 +8,7 @@ import AnimatedButton from '../components/AnimatedButton';
 import { CameraIcon, PlusIcon, StarIcon, RatingStarIcon } from '../assets/icons';
 import { uploadImageToSupabase } from '../utils/storage';
 import ChatModal from '../components/ChatModal';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 
 
 // Main Student Application Component
@@ -109,12 +110,70 @@ const DashboardPage: React.FC<{ searchQuery: string; onSelectItem: (item: Item) 
         );
     }, [items, searchQuery]);
 
+    const categoryData = useMemo(() => {
+        const categoryCounts: { [key: string]: number } = {};
+        items.forEach(item => {
+            if (!item.isSold) {
+                categoryCounts[item.category] = (categoryCounts[item.category] || 0) + 1;
+            }
+        });
+        return Object.entries(categoryCounts).map(([name, value]) => ({
+            name,
+            value
+        }));
+    }, [items]);
+
+    const COLORS = ['#1a1a1a', '#4a4a4a', '#6a6a6a', '#8a7656', '#9e8a6a', '#b39f7f', '#c8b394', '#d4c4aa'];
+
     return (
         <div>
             <div className="text-center mb-8">
                 <h2 className="text-3xl font-extrabold !text-black dark:text-white">Dashboard</h2>
                 <p className="text-gray-500 dark:text-gray-400 mt-1 md:hidden">Swipe to discover new items</p>
                 <p className="text-gray-500 dark:text-gray-400 mt-1 hidden md:block">Recently listed items</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">Total Users</p>
+                            <p className="text-4xl font-extrabold !text-black dark:text-white mt-2">{users.length}</p>
+                        </div>
+                        <div className="bg-primary-100 dark:bg-gray-700 rounded-full p-4">
+                            <svg className="w-8 h-8 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+                    <h3 className="text-lg font-bold !text-black dark:text-white mb-4">Products by Category</h3>
+                    {categoryData.length > 0 ? (
+                        <ResponsiveContainer width="100%" height={200}>
+                            <PieChart>
+                                <Pie
+                                    data={categoryData}
+                                    cx="50%"
+                                    cy="50%"
+                                    labelLine={false}
+                                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                    outerRadius={70}
+                                    fill="#8884d8"
+                                    dataKey="value"
+                                >
+                                    {categoryData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    ) : (
+                        <p className="text-center text-gray-500 dark:text-gray-400">No items listed yet</p>
+                    )}
+                </div>
             </div>
             
             <div className="md:hidden">
